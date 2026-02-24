@@ -1,0 +1,71 @@
+const Redis = require('ioredis');
+
+let redis = null;
+
+const getRedis = () => {
+  if (!redis) {
+    try {
+      redis = new Redis({
+        host: process.env.REDIS_HOST || 'localhost',
+        port: parseInt(process.env.REDIS_PORT) || 6379,
+        password: process.env.REDIS_PASSWORD || undefined,
+        retryStrategy: (times) => {
+          if (times > 3) return null;
+          return Math.min(times * 200, 2000);
+        },
+        lazyConnect: true,
+      });
+
+      redis.on('error', () => {
+        redis = null;
+      });
+    } catch {
+      redis = null;
+    }
+  }
+  return redis;
+};
+
+const get = async (key) => {
+  const client = getRedis();
+  if (!client) return null;
+  try {
+    const data = await client.get(key);
+    return data ? JSON.parse(data) : null;
+  } catch {
+    return null;
+  }
+};
+
+const set = async (key, value, ttl = 300) => {
+  const client = getRedis();
+  if (!client) return;
+  try {
+    await client.set(key, JSON.stringify(value), 'EX', ttl);
+  } catch {
+    // Redis unavailable, skip caching
+  }
+};
+
+const del = async (key) => {
+  const client = getRedis();
+  if (!client) return;
+  try {
+    await client.del(key);
+  } catch {
+    // Redis unavailable
+  }
+};
+
+const delPattern = async (pattern) => {
+  const client = getRedis();
+  if (!client) return;
+  try {
+    const keys = await client.keys(pattern);
+    if (keys.length > 0) await client.del(...keys);
+  } catch {
+    // Redis unavailable
+  }
+};
+
+module.exports = { get, set, del, delPattern };

@@ -1,0 +1,76 @@
+'use strict';
+
+const { v4: uuidv4 } = require('uuid');
+const bcrypt = require('bcryptjs');
+
+module.exports = {
+  async up(queryInterface) {
+    const hashedPassword = await bcrypt.hash('123456', 10);
+    
+    await queryInterface.bulkInsert('Users', [
+      {
+        id: uuidv4(),
+        name: 'Admin Kullanıcı',
+        email: 'admin@bitiryemek.com',
+        password: hashedPassword,
+        phone: '5551112233',
+        role: 'admin',
+        isEmailVerified: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        id: uuidv4(),
+        name: 'İşletme Sahibi 1',
+        email: 'owner1@bitiryemek.com',
+        password: hashedPassword,
+        phone: '5552223344',
+        role: 'business_owner',
+        isEmailVerified: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        id: uuidv4(),
+        name: 'İşletme Sahibi 2',
+        email: 'owner2@bitiryemek.com',
+        password: hashedPassword,
+        phone: '5553334455',
+        role: 'business_owner',
+        isEmailVerified: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        id: uuidv4(),
+        name: 'Müşteri 1',
+        email: 'customer1@example.com',
+        password: hashedPassword,
+        phone: '5554445566',
+        role: 'customer',
+        isEmailVerified: true,
+        latitude: 41.0082,
+        longitude: 28.9784,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        id: uuidv4(),
+        name: 'Müşteri 2',
+        email: 'customer2@example.com',
+        password: hashedPassword,
+        phone: '5555556677',
+        role: 'customer',
+        isEmailVerified: true,
+        latitude: 41.0214,
+        longitude: 29.0040,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    ]);
+  },
+
+  async down(queryInterface) {
+    await queryInterface.bulkDelete('Users', null, {});
+  },
+};

@@ -1,0 +1,20 @@
+'use strict';
+
+module.exports = {
+  async up(queryInterface) {
+    await queryInterface.bulkInsert('Categories', [
+      { id: 1, name: 'Restoran', slug: 'restoran', createdAt: new Date(), updatedAt: new Date() },
+      { id: 2, name: 'Fırın', slug: 'firin', createdAt: new Date(), updatedAt: new Date() },
+      { id: 3, name: 'Pastane', slug: 'pastane', createdAt: new Date(), updatedAt: new Date() },
+      { id: 4, name: 'Market', slug: 'market', createdAt: new Date(), updatedAt: new Date() },
+      { id: 5, name: 'Kafe', slug: 'kafe', createdAt: new Date(), updatedAt: new Date() },
+      { id: 6, name: 'Manav', slug: 'manav', createdAt: new Date(), updatedAt: new Date() },
+      { id: 7, name: 'Kasap', slug: 'kasap', createdAt: new Date(), updatedAt: new Date() },
+      { id: 8, name: 'Büfe', slug: 'bufe', createdAt: new Date(), updatedAt: new Date() },
+    ]);
+  },
+
+  async down(queryInterface) {
+    await queryInterface.bulkDelete('Categories', null, {});
+  },
+};
