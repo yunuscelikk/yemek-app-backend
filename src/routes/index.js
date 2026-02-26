@@ -2,6 +2,7 @@ const router = require('express').Router();
 
 router.use('/auth', require('./auth'));
 router.use('/users', require('./users'));
+router.use('/categories', require('./categories'));
 router.use('/businesses', require('./businesses'));
 router.use('/packages', require('./packages'));
 router.use('/orders', require('./orders'));

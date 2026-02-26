@@ -1,0 +1,297 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../config/theme.dart';
+import '../../../../core/network/dio_client.dart';
+import '../../../../core/services/location_service.dart';
+import '../../../../core/storage/token_storage.dart';
+import '../../../../core/utils/responsive.dart';
+import '../../../home/presentation/pages/home_page.dart';
+import '../../../location/presentation/pages/location_permission_page.dart';
+import '../../data/datasources/auth_remote_datasource.dart';
+import '../../data/repositories/auth_repository_impl.dart';
+import '../../domain/repositories/auth_repository.dart';
+import '../bloc/auth_bloc.dart';
+
+class LoginPage extends StatelessWidget {
+  const LoginPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) => AuthBloc(
+        authRepository: AuthRepositoryImpl(
+          remoteDataSource: AuthRemoteDataSource(dioClient: DioClient()),
+          tokenStorage: SharedPrefsTokenStorage(),
+        ),
+      ),
+      child: const LoginView(),
+    );
+  }
+}
+
+class LoginView extends StatefulWidget {
+  const LoginView({super.key});
+
+  @override
+  State<LoginView> createState() => _LoginViewState();
+}
+
+class _LoginViewState extends State<LoginView> {
+  final _formKey = GlobalKey<FormState>();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _obscurePassword = true;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  void _onLoginPressed() {
+    if (_formKey.currentState?.validate() ?? false) {
+      context.read<AuthBloc>().add(
+        LoginRequested(
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        backgroundColor: AppColors.background,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ),
+      body: BlocConsumer<AuthBloc, AuthState>(
+        listener: (context, state) async {
+          if (state is AuthAuthenticated) {
+            // Check location permission after successful login
+            final locationService = LocationService();
+            final hasPermission = await locationService.hasPermission();
+
+            if (hasPermission && context.mounted) {
+              // Get current position and navigate to home
+              final position = await locationService.getCurrentPosition();
+              if (position != null && context.mounted) {
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(
+                    builder: (context) => HomePage(
+                      latitude: position.latitude,
+                      longitude: position.longitude,
+                    ),
+                  ),
+                );
+              }
+            } else if (context.mounted) {
+              // Navigate to location permission page
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(
+                  builder: (context) => const LocationPermissionPage(),
+                ),
+              );
+            }
+          } else if (state is AuthError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: AppColors.error,
+              ),
+            );
+          }
+        },
+        builder: (context, state) {
+          final responsive = context.responsive;
+          return SafeArea(
+            child: SingleChildScrollView(
+              padding: EdgeInsets.all(responsive.screenPadding),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(height: responsive.padding(AppSpacing.lg)),
+
+                    // Title
+                    Text(
+                      'Hoş Geldiniz!',
+                      style: AppTypography.h2.copyWith(
+                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+
+                    SizedBox(height: responsive.padding(AppSpacing.sm)),
+
+                    // Subtitle
+                    Text(
+                      'Hesabınıza giriş yaparak yiyecekleri kurtarmaya başlayın',
+                      style: AppTypography.bodyMedium.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+
+                    SizedBox(height: responsive.padding(AppSpacing.xxl)),
+
+                    // Email Field
+                    TextFormField(
+                      controller: _emailController,
+                      keyboardType: TextInputType.emailAddress,
+                      enabled: state is! AuthLoading,
+                      decoration: const InputDecoration(
+                        hintText: 'E-posta adresiniz',
+                        prefixIcon: Icon(Icons.email_outlined),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'E-posta adresi gerekli';
+                        }
+                        if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
+                          return 'Geçerli bir e-posta adresi girin';
+                        }
+                        return null;
+                      },
+                    ),
+
+                    const SizedBox(height: AppSpacing.lg),
+
+                    // Password Field
+                    TextFormField(
+                      controller: _passwordController,
+                      obscureText: _obscurePassword,
+                      enabled: state is! AuthLoading,
+                      decoration: InputDecoration(
+                        hintText: 'Şifreniz',
+                        prefixIcon: const Icon(Icons.lock_outline),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscurePassword
+                                ? Icons.visibility_outlined
+                                : Icons.visibility_off_outlined,
+                            color: AppColors.textHint,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _obscurePassword = !_obscurePassword;
+                            });
+                          },
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Şifre gerekli';
+                        }
+                        if (value.length < 6) {
+                          return 'Şifre en az 6 karakter olmalı';
+                        }
+                        return null;
+                      },
+                    ),
+
+                    const SizedBox(height: AppSpacing.md),
+
+                    // Forgot Password
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: () {
+                          // TODO: Navigate to forgot password page
+                        },
+                        child: Text(
+                          'Şifremi Unuttum',
+                          style: AppTypography.bodyMedium.copyWith(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: AppSpacing.xl),
+
+                    // Login Button
+                    SizedBox(
+                      width: double.infinity,
+                      height: 56,
+                      child: ElevatedButton(
+                        onPressed: state is AuthLoading
+                            ? null
+                            : _onLoginPressed,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(AppRadius.full),
+                          ),
+                        ),
+                        child: state is AuthLoading
+                            ? const SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.white,
+                                  ),
+                                ),
+                              )
+                            : Text(
+                                'Giriş Yap',
+                                style: AppTypography.button.copyWith(
+                                  color: Colors.white,
+                                ),
+                              ),
+                      ),
+                    ),
+
+                    const SizedBox(height: AppSpacing.xl),
+
+                    // Register Link
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Hesabınız yok mu? ',
+                          style: AppTypography.bodyMedium.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            // TODO: Navigate to register page
+                          },
+                          style: TextButton.styleFrom(
+                            padding: EdgeInsets.zero,
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          child: Text(
+                            'Kayıt Ol',
+                            style: AppTypography.bodyMedium.copyWith(
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
