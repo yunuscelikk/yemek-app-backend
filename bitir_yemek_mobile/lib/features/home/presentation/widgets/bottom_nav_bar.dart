@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../config/theme.dart';
+import '../../../search/presentation/pages/search_page.dart';
+import '../pages/home_page.dart';
 
 class BottomNavBar extends StatelessWidget {
   final int currentIndex;
@@ -26,11 +28,11 @@ class BottomNavBar extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildNavItem(Icons.explore_outlined, 'Keşfet', 0),
-              _buildNavItem(Icons.search, 'Ara', 1),
-              _buildNavItem(Icons.inventory_2_outlined, 'Sipariş', 2),
-              _buildNavItem(Icons.favorite_outline, 'Favoriler', 3),
-              _buildNavItem(Icons.person_outline, 'Profil', 4),
+              _buildNavItem(Icons.explore_outlined, 'Keşfet', 0, context),
+              _buildNavItem(Icons.search, 'Ara', 1, context),
+              _buildNavItem(Icons.inventory_2_outlined, 'Sipariş', 2, context),
+              _buildNavItem(Icons.favorite_outline, 'Favoriler', 3, context),
+              _buildNavItem(Icons.person_outline, 'Profil', 4, context),
             ],
           ),
         ),
@@ -38,12 +40,19 @@ class BottomNavBar extends StatelessWidget {
     );
   }
 
-  Widget _buildNavItem(IconData icon, String label, int index) {
+  Widget _buildNavItem(
+    IconData icon,
+    String label,
+    int index,
+    BuildContext context,
+  ) {
     final isSelected = index == currentIndex;
     return GestureDetector(
       onTap: () {
         if (onTap != null) {
           onTap!(index);
+        } else {
+          _handleNavigation(index, context);
         }
       },
       child: Column(
@@ -65,5 +74,48 @@ class BottomNavBar extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  void _handleNavigation(int index, BuildContext context) {
+    // TODO: Get current location from a service
+    const latitude = 41.0369;
+    const longitude = 28.9857;
+
+    switch (index) {
+      case 0:
+        // Keşfet - Home
+        if (currentIndex != 0) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (context) =>
+                  const HomePage(latitude: latitude, longitude: longitude),
+            ),
+          );
+        }
+        break;
+      case 1:
+        // Ara - Search
+        if (currentIndex != 1) {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) =>
+                  const SearchPage(latitude: latitude, longitude: longitude),
+            ),
+          );
+        }
+        break;
+      case 2:
+        // Sipariş - Orders
+        // TODO: Navigate to orders page
+        break;
+      case 3:
+        // Favoriler - Favorites
+        // TODO: Navigate to favorites page
+        break;
+      case 4:
+        // Profil - Profile
+        // TODO: Navigate to profile page
+        break;
+    }
   }
 }

@@ -5,8 +5,8 @@ import '../../../../core/network/dio_client.dart';
 import '../../../../core/services/location_service.dart';
 import '../../../../core/storage/token_storage.dart';
 import '../../../../core/utils/responsive.dart';
-import '../../../home/presentation/pages/home_page.dart';
 import '../../../location/presentation/pages/location_permission_page.dart';
+import '../../../main/presentation/pages/main_scaffold.dart';
 import '../../data/datasources/auth_remote_datasource.dart';
 import '../../data/repositories/auth_repository_impl.dart';
 import '../../domain/repositories/auth_repository.dart';
@@ -85,7 +85,7 @@ class _LoginViewState extends State<LoginView> {
               if (position != null && context.mounted) {
                 Navigator.of(context).pushReplacement(
                   MaterialPageRoute(
-                    builder: (context) => HomePage(
+                    builder: (context) => MainScaffold(
                       latitude: position.latitude,
                       longitude: position.longitude,
                     ),

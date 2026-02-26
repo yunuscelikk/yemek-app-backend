@@ -3,8 +3,8 @@ import 'config/theme.dart';
 import 'core/services/location_service.dart';
 import 'core/storage/token_storage.dart';
 import 'features/auth/presentation/pages/welcome_page.dart';
-import 'features/home/presentation/pages/home_page.dart';
 import 'features/location/presentation/pages/location_permission_page.dart';
+import 'features/main/presentation/pages/main_scaffold.dart';
 
 void main() {
   runApp(const MainApp());
@@ -48,12 +48,12 @@ class _SplashScreenState extends State<SplashScreen> {
       final hasPermission = await locationService.hasPermission();
 
       if (hasPermission) {
-        // Konum izni var, home page'e git
+        // Konum izni var, main scaffold'a git
         final position = await locationService.getCurrentPosition();
         if (position != null && mounted) {
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(
-              builder: (context) => HomePage(
+              builder: (context) => MainScaffold(
                 latitude: position.latitude,
                 longitude: position.longitude,
               ),

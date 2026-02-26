@@ -5,37 +5,47 @@ import '../../data/models/package_model.dart';
 class PackageCard extends StatelessWidget {
   final PackageModel package;
   final bool isHorizontal;
+  final VoidCallback? onTap;
+  final VoidCallback? onFavoriteTap;
 
   const PackageCard({
     super.key,
     required this.package,
     this.isHorizontal = false,
+    this.onTap,
+    this.onFavoriteTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    if (isHorizontal) {
-      return _buildHorizontalCard();
-    }
-    return _buildVerticalCard();
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeInOut,
+        child: isHorizontal ? _buildHorizontalCard() : _buildVerticalCard(),
+      ),
+    );
   }
 
   Widget _buildHorizontalCard() {
     return Container(
-      width: 220,
+      width: 300,
+      height: 300,
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppRadius.lg),
         boxShadow: [
           BoxShadow(
             color: AppColors.shadow,
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           // Image
           ClipRRect(
@@ -45,7 +55,7 @@ class PackageCard extends StatelessWidget {
             child: Stack(
               children: [
                 Container(
-                  height: 140,
+                  height: 150,
                   width: double.infinity,
                   color: AppColors.divider,
                   child: package.imageUrl != null
@@ -53,18 +63,32 @@ class PackageCard extends StatelessWidget {
                           package.imageUrl!,
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) {
-                            return const Icon(
-                              Icons.restaurant,
-                              size: 50,
-                              color: AppColors.textHint,
-                            );
+                            return _buildPlaceholderImage();
                           },
                         )
-                      : const Icon(
-                          Icons.restaurant,
-                          size: 50,
-                          color: AppColors.textHint,
-                        ),
+                      : _buildPlaceholderImage(),
+                ),
+                // Discount Badge
+                Positioned(
+                  top: AppSpacing.sm,
+                  left: AppSpacing.sm,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.sm,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.success,
+                      borderRadius: BorderRadius.circular(AppRadius.sm),
+                    ),
+                    child: Text(
+                      '-${package.discountPercentage}%',
+                      style: AppTypography.bodySmall.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
                 ),
                 // Rating Badge
                 Positioned(
@@ -76,10 +100,18 @@ class PackageCard extends StatelessWidget {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: Colors.white.withOpacity(0.95),
                       borderRadius: BorderRadius.circular(AppRadius.sm),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.shadow,
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
                     child: Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(Icons.star, size: 14, color: AppColors.warning),
                         const SizedBox(width: 2),
@@ -93,6 +125,29 @@ class PackageCard extends StatelessWidget {
                     ),
                   ),
                 ),
+                // Stock Badge
+                if (package.remainingQuantity <= 3)
+                  Positioned(
+                    bottom: AppSpacing.sm,
+                    left: AppSpacing.sm,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.sm,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.error,
+                        borderRadius: BorderRadius.circular(AppRadius.sm),
+                      ),
+                      child: Text(
+                        'Son ${package.remainingQuantity} adet',
+                        style: AppTypography.bodySmall.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),
@@ -103,6 +158,7 @@ class PackageCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Business Name & Favorite
                 Row(
                   children: [
                     Expanded(
@@ -113,25 +169,51 @@ class PackageCard extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    Icon(
-                      Icons.favorite_border,
-                      size: 20,
-                      color: AppColors.textHint,
+                    GestureDetector(
+                      onTap: onFavoriteTap,
+                      child: Icon(
+                        Icons.favorite_border,
+                        size: 22,
+                        color: AppColors.textHint,
+                      ),
                     ),
                   ],
                 ),
                 const SizedBox(height: AppSpacing.xs),
+                // Package Title
                 Text(
-                  'Teslim günü ${package.formattedPickupTime}',
-                  style: AppTypography.bodySmall.copyWith(
+                  package.title,
+                  style: AppTypography.bodyMedium.copyWith(
                     color: AppColors.textSecondary,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: AppSpacing.sm),
+                const SizedBox(height: AppSpacing.xs),
+                // Pickup Time
                 Row(
                   children: [
+                    Icon(
+                      Icons.access_time,
+                      size: 14,
+                      color: AppColors.textHint,
+                    ),
+                    const SizedBox(width: 4),
                     Text(
-                      '₺${package.originalPrice.toStringAsFixed(2)}',
+                      package.formattedPickupTime,
+                      style: AppTypography.bodySmall.copyWith(
+                        color: AppColors.textHint,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                // Price Row
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      '₺${package.originalPrice.toStringAsFixed(0)}',
                       style: AppTypography.bodyMedium.copyWith(
                         color: AppColors.textHint,
                         decoration: TextDecoration.lineThrough,
@@ -139,7 +221,7 @@ class PackageCard extends StatelessWidget {
                     ),
                     const SizedBox(width: AppSpacing.sm),
                     Text(
-                      '₺${package.discountedPrice.toStringAsFixed(2)}',
+                      '₺${package.discountedPrice.toStringAsFixed(0)}',
                       style: AppTypography.bodyLarge.copyWith(
                         color: AppColors.primary,
                         fontWeight: FontWeight.bold,
@@ -155,6 +237,31 @@ class PackageCard extends StatelessWidget {
     );
   }
 
+  Widget _buildPlaceholderImage() {
+    return Container(
+      color: AppColors.divider,
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.restaurant,
+              size: 40,
+              color: AppColors.textHint.withOpacity(0.5),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              package.business.category?.name ?? 'Restoran',
+              style: AppTypography.bodySmall.copyWith(
+                color: AppColors.textHint,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildVerticalCard() {
     return Container(
       decoration: BoxDecoration(
@@ -163,8 +270,8 @@ class PackageCard extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             color: AppColors.shadow,
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -175,27 +282,46 @@ class PackageCard extends StatelessWidget {
             borderRadius: BorderRadius.horizontal(
               left: Radius.circular(AppRadius.lg),
             ),
-            child: Container(
-              width: 120,
-              height: 120,
-              color: AppColors.divider,
-              child: package.imageUrl != null
-                  ? Image.network(
-                      package.imageUrl!,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return const Icon(
-                          Icons.restaurant,
-                          size: 40,
-                          color: AppColors.textHint,
-                        );
-                      },
-                    )
-                  : const Icon(
-                      Icons.restaurant,
-                      size: 40,
-                      color: AppColors.textHint,
+            child: Stack(
+              children: [
+                Container(
+                  width: 120,
+                  height: 120,
+                  color: AppColors.divider,
+                  child: package.imageUrl != null
+                      ? Image.network(
+                          package.imageUrl!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return _buildPlaceholderImage();
+                          },
+                        )
+                      : _buildPlaceholderImage(),
+                ),
+                // Discount Badge
+                Positioned(
+                  top: 8,
+                  left: 8,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
                     ),
+                    decoration: BoxDecoration(
+                      color: AppColors.success,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      '-${package.discountPercentage}%',
+                      style: AppTypography.bodySmall.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 10,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
 
@@ -216,10 +342,13 @@ class PackageCard extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      Icon(
-                        Icons.favorite_border,
-                        size: 20,
-                        color: AppColors.textHint,
+                      GestureDetector(
+                        onTap: onFavoriteTap,
+                        child: Icon(
+                          Icons.favorite_border,
+                          size: 22,
+                          color: AppColors.textHint,
+                        ),
                       ),
                     ],
                   ),
@@ -232,34 +361,72 @@ class PackageCard extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: AppSpacing.sm),
+                  const SizedBox(height: AppSpacing.xs),
+                  // Rating & Distance
                   Row(
                     children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.sm,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.success.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(AppRadius.sm),
-                        ),
-                        child: Text(
-                          '-${package.discountPercentage}%',
-                          style: AppTypography.bodySmall.copyWith(
-                            color: AppColors.success,
-                            fontWeight: FontWeight.w600,
-                          ),
+                      Icon(Icons.star, size: 14, color: AppColors.warning),
+                      const SizedBox(width: 2),
+                      Text(
+                        package.business.rating.toStringAsFixed(1),
+                        style: AppTypography.bodySmall.copyWith(
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
-                      const Spacer(),
+                      const SizedBox(width: AppSpacing.sm),
+                      Icon(
+                        Icons.location_on,
+                        size: 14,
+                        color: AppColors.textHint,
+                      ),
+                      const SizedBox(width: 2),
                       Text(
-                        '₺${package.discountedPrice.toStringAsFixed(2)}',
+                        '${package.business.distance?.toStringAsFixed(1) ?? '?'} km',
+                        style: AppTypography.bodySmall.copyWith(
+                          color: AppColors.textHint,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        '₺${package.originalPrice.toStringAsFixed(0)}',
+                        style: AppTypography.bodyMedium.copyWith(
+                          color: AppColors.textHint,
+                          decoration: TextDecoration.lineThrough,
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                      Text(
+                        '₺${package.discountedPrice.toStringAsFixed(0)}',
                         style: AppTypography.bodyLarge.copyWith(
                           color: AppColors.primary,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
+                      const Spacer(),
+                      if (package.remainingQuantity <= 3)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.error.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            'Son ${package.remainingQuantity}',
+                            style: AppTypography.bodySmall.copyWith(
+                              color: AppColors.error,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 10,
+                            ),
+                          ),
+                        ),
                     ],
                   ),
                 ],

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import '../../../../config/theme.dart';
 import '../../../../core/services/location_service.dart';
-import '../../../home/presentation/pages/home_page.dart';
+import '../../../main/presentation/pages/main_scaffold.dart';
 
 class LocationPermissionPage extends StatefulWidget {
   const LocationPermissionPage({super.key});
@@ -48,10 +48,10 @@ class _LocationPermissionPageState extends State<LocationPermissionPage> {
       final position = await _locationService.getCurrentPosition();
 
       if (position != null && mounted) {
-        // Navigate to home page with location
+        // Navigate to main scaffold with location
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
-            builder: (context) => HomePage(
+            builder: (context) => MainScaffold(
               latitude: position.latitude,
               longitude: position.longitude,
             ),

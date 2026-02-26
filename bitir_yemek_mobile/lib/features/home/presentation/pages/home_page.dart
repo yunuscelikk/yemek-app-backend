@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../config/theme.dart';
 import '../../../../core/network/dio_client.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../shared/widgets/shimmer_loader.dart';
 import '../../data/datasources/businesses_remote_datasource.dart';
 import '../../data/models/category_model.dart';
 import '../../data/repositories/businesses_repository_impl.dart';
@@ -12,7 +13,6 @@ import '../bloc/packages_bloc.dart';
 import '../widgets/category_chips.dart';
 import '../widgets/location_header.dart';
 import '../widgets/package_card.dart';
-import '../widgets/bottom_nav_bar.dart';
 
 class HomePage extends StatelessWidget {
   final double latitude;
@@ -147,13 +147,37 @@ class _HomeViewState extends State<HomeView> {
                   );
                 }
                 if (state is HomeLoading) {
-                  return const SizedBox(
-                    height: 50,
-                    child: Center(
-                      child: CircularProgressIndicator(
-                        color: AppColors.primary,
-                        strokeWidth: 2,
+                  // Shimmer loading for categories
+                  return SizedBox(
+                    height: 56,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.screenPadding,
+                        vertical: AppSpacing.xs,
                       ),
+                      itemCount: 5,
+                      itemBuilder: (context, index) {
+                        return Padding(
+                          padding: const EdgeInsets.only(right: AppSpacing.sm),
+                          child: ShimmerLoader(
+                            isLoading: true,
+                            child: Container(
+                              width: 80,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: AppSpacing.lg,
+                                vertical: AppSpacing.sm,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.surface,
+                                borderRadius: BorderRadius.circular(
+                                  AppRadius.full,
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   );
                 }
@@ -165,7 +189,7 @@ class _HomeViewState extends State<HomeView> {
                     onCategorySelected: (_) {},
                   );
                 }
-                return const SizedBox(height: 50);
+                return const SizedBox(height: 56);
               },
             ),
 
@@ -184,11 +208,7 @@ class _HomeViewState extends State<HomeView> {
                 },
                 builder: (context, state) {
                   if (state is PackagesLoading) {
-                    return const Center(
-                      child: CircularProgressIndicator(
-                        color: AppColors.primary,
-                      ),
-                    );
+                    return _buildShimmerLoading();
                   }
 
                   if (state is PackagesError && state.packages == null) {
@@ -240,25 +260,7 @@ class _HomeViewState extends State<HomeView> {
                     final isLoadingMore = state is PackagesLoadingMore;
 
                     if (packages.isEmpty) {
-                      return Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.shopping_bag_outlined,
-                              size: 64,
-                              color: AppColors.textHint,
-                            ),
-                            const SizedBox(height: AppSpacing.md),
-                            Text(
-                              'Henüz paket bulunmuyor',
-                              style: AppTypography.bodyLarge.copyWith(
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
+                      return _buildEmptyState();
                     }
 
                     return RefreshIndicator(
@@ -314,7 +316,7 @@ class _HomeViewState extends State<HomeView> {
                           // Horizontal Package List
                           SliverToBoxAdapter(
                             child: SizedBox(
-                              height: 280,
+                              height: 290,
                               child: ListView.builder(
                                 scrollDirection: Axis.horizontal,
                                 padding: const EdgeInsets.symmetric(
@@ -419,7 +421,154 @@ class _HomeViewState extends State<HomeView> {
           ],
         ),
       ),
-      bottomNavigationBar: const BottomNavBar(currentIndex: 0),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 120,
+            height: 120,
+            decoration: BoxDecoration(
+              color: AppColors.primary.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.shopping_bag_outlined,
+              size: 60,
+              color: AppColors.primary.withOpacity(0.5),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          Text(
+            'Henüz paket bulunmuyor',
+            style: AppTypography.h3.copyWith(color: AppColors.textPrimary),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            'Yakınınızdaki restoranlardan\nsürpriz paketler yakında burada!',
+            style: AppTypography.bodyMedium.copyWith(
+              color: AppColors.textSecondary,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: AppSpacing.xl),
+          ElevatedButton.icon(
+            onPressed: () {
+              context.read<PackagesBloc>().add(
+                LoadNearbyPackages(
+                  latitude: widget.latitude,
+                  longitude: widget.longitude,
+                ),
+              );
+            },
+            icon: const Icon(Icons.refresh),
+            label: const Text('Yenile'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildShimmerLoading() {
+    return CustomScrollView(
+      slivers: [
+        // Section Title Shimmer
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.screenPadding,
+              vertical: AppSpacing.md,
+            ),
+            child: ShimmerLoader(
+              isLoading: true,
+              child: Container(
+                width: 200,
+                height: 24,
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(AppRadius.sm),
+                ),
+              ),
+            ),
+          ),
+        ),
+        // Horizontal Cards Shimmer
+        SliverToBoxAdapter(
+          child: SizedBox(
+            height: 310,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.screenPadding,
+              ),
+              itemCount: 3,
+              itemBuilder: (context, index) {
+                return Padding(
+                  padding: const EdgeInsets.only(right: AppSpacing.md),
+                  child: ShimmerLoader(
+                    isLoading: true,
+                    child: Container(
+                      width: 240,
+                      decoration: BoxDecoration(
+                        color: AppColors.surface,
+                        borderRadius: BorderRadius.circular(AppRadius.lg),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+        // Second Section Title Shimmer
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.screenPadding,
+              vertical: AppSpacing.md,
+            ),
+            child: ShimmerLoader(
+              isLoading: true,
+              child: Container(
+                width: 150,
+                height: 24,
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(AppRadius.sm),
+                ),
+              ),
+            ),
+          ),
+        ),
+        // Vertical Cards Shimmer
+        SliverPadding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.screenPadding,
+          ),
+          sliver: SliverList.builder(
+            itemCount: 3,
+            itemBuilder: (context, index) {
+              return Padding(
+                padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                child: ShimmerLoader(
+                  isLoading: true,
+                  child: Container(
+                    height: 120,
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(AppRadius.lg),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 }
