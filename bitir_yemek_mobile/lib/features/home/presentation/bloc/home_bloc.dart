@@ -1,7 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import '../../data/models/category_model.dart';
-import '../../data/repositories/businesses_repository_impl.dart';
 import '../../domain/repositories/businesses_repository.dart';
 
 part 'home_event.dart';

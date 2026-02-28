@@ -2,6 +2,7 @@ import '../datasources/businesses_remote_datasource.dart';
 import '../models/business_model.dart';
 import '../models/category_model.dart';
 import '../models/package_model.dart';
+import '../models/reservation_model.dart';
 import '../../domain/repositories/businesses_repository.dart';
 
 class BusinessesRepositoryImpl implements BusinessesRepository {
@@ -159,6 +160,100 @@ class BusinessesRepositoryImpl implements BusinessesRepository {
       print('Repository: Error: $e');
       return CategoriesResult.failure('Bir hata oluştu: $e');
     }
+  }
+
+  @override
+  Future<ReservationResult> createReservation({
+    required String packageId,
+    int quantity = 1,
+    String? couponCode,
+  }) async {
+    try {
+      final response = await _remoteDataSource.createReservation(
+        packageId: packageId,
+        quantity: quantity,
+        couponCode: couponCode,
+      );
+
+      final orderData = response['order'] as Map<String, dynamic>?;
+      if (orderData == null) {
+        return ReservationResult.failure('Rezervasyon olusturulamadi');
+      }
+
+      final reservation = ReservationModel.fromJson(orderData);
+      return ReservationResult.success(
+        reservation: reservation,
+        message: response['message'] as String?,
+      );
+    } on BusinessesException catch (e) {
+      return ReservationResult.failure(e.message);
+    } catch (e) {
+      return ReservationResult.failure('Bir hata olustu: $e');
+    }
+  }
+
+  @override
+  Future<CouponResult> validateCoupon({required String code}) async {
+    try {
+      final response = await _remoteDataSource.validateCoupon(code: code);
+
+      final couponData = response['coupon'] as Map<String, dynamic>?;
+      if (couponData == null) {
+        return CouponResult.failure('Kupon dogrulanamadi');
+      }
+
+      final coupon = CouponModel.fromJson(couponData);
+      return CouponResult.success(coupon: coupon);
+    } on BusinessesException catch (e) {
+      return CouponResult.failure(e.message);
+    } catch (e) {
+      return CouponResult.failure('Bir hata olustu: $e');
+    }
+  }
+}
+
+class ReservationResult {
+  final bool isSuccess;
+  final ReservationModel? reservation;
+  final String? message;
+  final String? error;
+
+  ReservationResult._({
+    required this.isSuccess,
+    this.reservation,
+    this.message,
+    this.error,
+  });
+
+  factory ReservationResult.success({
+    required ReservationModel reservation,
+    String? message,
+  }) {
+    return ReservationResult._(
+      isSuccess: true,
+      reservation: reservation,
+      message: message,
+    );
+  }
+
+  factory ReservationResult.failure(String error) {
+    return ReservationResult._(isSuccess: false, error: error);
+  }
+}
+
+class CouponResult {
+  final bool isSuccess;
+  final CouponModel? coupon;
+  final String? error;
+
+  CouponResult._({required this.isSuccess, this.coupon, this.error});
+
+  factory CouponResult.success({required CouponModel coupon}) {
+    return CouponResult._(isSuccess: true, coupon: coupon);
+  }
+
+  factory CouponResult.failure(String error) {
+    return CouponResult._(isSuccess: false, error: error);
   }
 }
 

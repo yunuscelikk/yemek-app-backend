@@ -9,7 +9,6 @@ import '../../../location/presentation/pages/location_permission_page.dart';
 import '../../../main/presentation/pages/main_scaffold.dart';
 import '../../data/datasources/auth_remote_datasource.dart';
 import '../../data/repositories/auth_repository_impl.dart';
-import '../../domain/repositories/auth_repository.dart';
 import '../bloc/auth_bloc.dart';
 
 class LoginPage extends StatelessWidget {

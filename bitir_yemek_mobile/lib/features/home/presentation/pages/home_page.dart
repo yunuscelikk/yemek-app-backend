@@ -13,6 +13,7 @@ import '../bloc/packages_bloc.dart';
 import '../widgets/category_chips.dart';
 import '../widgets/location_header.dart';
 import '../widgets/package_card.dart';
+import 'package_detail_page.dart';
 
 class HomePage extends StatelessWidget {
   final double latitude;
@@ -333,6 +334,15 @@ class _HomeViewState extends State<HomeView> {
                                     child: PackageCard(
                                       package: packages[index],
                                       isHorizontal: true,
+                                      onTap: () {
+                                        Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                            builder: (_) => PackageDetailPage(
+                                              package: packages[index],
+                                            ),
+                                          ),
+                                        );
+                                      },
                                     ),
                                   );
                                 },
@@ -404,6 +414,15 @@ class _HomeViewState extends State<HomeView> {
                                   child: PackageCard(
                                     package: packages[index],
                                     isHorizontal: false,
+                                    onTap: () {
+                                      Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                          builder: (_) => PackageDetailPage(
+                                            package: packages[index],
+                                          ),
+                                        ),
+                                      );
+                                    },
                                   ),
                                 );
                               },

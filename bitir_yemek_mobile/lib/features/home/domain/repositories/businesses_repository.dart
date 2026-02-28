@@ -1,5 +1,3 @@
-import '../../data/models/business_model.dart';
-import '../../data/models/package_model.dart';
 import '../../data/repositories/businesses_repository_impl.dart';
 
 abstract class BusinessesRepository {
@@ -33,4 +31,12 @@ abstract class BusinessesRepository {
   });
 
   Future<CategoriesResult> getCategories();
+
+  Future<ReservationResult> createReservation({
+    required String packageId,
+    int quantity = 1,
+    String? couponCode,
+  });
+
+  Future<CouponResult> validateCoupon({required String code});
 }

@@ -1,12 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/network/dio_client.dart';
+import '../../../../core/storage/token_storage.dart';
 import '../../../home/data/datasources/businesses_remote_datasource.dart';
 import '../../../home/data/repositories/businesses_repository_impl.dart';
 import '../../../home/presentation/bloc/home_bloc.dart';
 import '../../../home/presentation/bloc/packages_bloc.dart';
 import '../../../home/presentation/pages/home_page.dart';
 import '../../../home/presentation/widgets/bottom_nav_bar.dart';
+import '../../../profile/data/datasources/profile_remote_datasource.dart';
+import '../../../profile/data/repositories/profile_repository_impl.dart';
+import '../../../profile/presentation/bloc/profile_bloc.dart';
+import '../../../profile/presentation/pages/profile_page.dart';
+import '../../../orders/data/datasources/orders_remote_datasource.dart';
+import '../../../orders/data/repositories/orders_repository_impl.dart';
+import '../../../orders/presentation/bloc/orders_bloc.dart';
+import '../../../orders/presentation/pages/orders_page.dart';
 import '../../../search/presentation/bloc/search_bloc.dart';
 import '../../../search/presentation/pages/search_page.dart';
 
@@ -74,6 +83,37 @@ class _MainScaffoldState extends State<MainScaffold> {
             ),
           ),
         ),
+        // Orders Bloc
+        BlocProvider(
+          create: (context) {
+            final tokenStorage = SharedPrefsTokenStorage();
+            final dioClient = DioClient();
+            return OrdersBloc(
+              repository: OrdersRepositoryImpl(
+                remoteDataSource: OrdersRemoteDataSource(
+                  dioClient: dioClient,
+                  tokenStorage: tokenStorage,
+                ),
+              ),
+            )..add(const LoadOrders());
+          },
+        ),
+        // Profile Bloc
+        BlocProvider(
+          create: (context) {
+            final tokenStorage = SharedPrefsTokenStorage();
+            final dioClient = DioClient();
+            return ProfileBloc(
+              profileRepository: ProfileRepositoryImpl(
+                remoteDataSource: ProfileRemoteDataSource(
+                  dioClient: dioClient,
+                  tokenStorage: tokenStorage,
+                ),
+                tokenStorage: tokenStorage,
+              ),
+            )..add(LoadProfile());
+          },
+        ),
       ],
       child: Scaffold(
         body: IndexedStack(
@@ -84,11 +124,23 @@ class _MainScaffoldState extends State<MainScaffold> {
             // 1 - Ara (Search)
             SearchPage(latitude: widget.latitude, longitude: widget.longitude),
             // 2 - Sipariş (Orders)
-            const _PlaceholderScreen(title: 'Siparişlerim'),
+            OrdersPage(
+              onNavigateToHome: () {
+                setState(() {
+                  _currentIndex = 0;
+                });
+              },
+            ),
             // 3 - Favoriler (Favorites)
             const _PlaceholderScreen(title: 'Favorilerim'),
             // 4 - Profil (Profile)
-            const _PlaceholderScreen(title: 'Profil'),
+            ProfilePage(
+              onTabSwitch: (index) {
+                setState(() {
+                  _currentIndex = index;
+                });
+              },
+            ),
           ],
         ),
         bottomNavigationBar: BottomNavBar(

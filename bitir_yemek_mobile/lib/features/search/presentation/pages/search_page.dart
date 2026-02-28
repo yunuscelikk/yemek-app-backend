@@ -5,6 +5,7 @@ import '../../../../core/network/dio_client.dart';
 import '../../../../shared/widgets/shimmer_loader.dart';
 import '../../../home/data/datasources/businesses_remote_datasource.dart';
 import '../../../home/data/repositories/businesses_repository_impl.dart';
+import '../../../home/presentation/pages/package_detail_page.dart';
 import '../../../home/presentation/widgets/package_card.dart';
 import '../bloc/search_bloc.dart';
 import '../widgets/search_bar.dart';
@@ -215,6 +216,15 @@ class _SearchViewState extends State<SearchView> {
                             child: PackageCard(
                               package: packages[index],
                               isHorizontal: false,
+                              onTap: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => PackageDetailPage(
+                                      package: packages[index],
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
                           );
                         },

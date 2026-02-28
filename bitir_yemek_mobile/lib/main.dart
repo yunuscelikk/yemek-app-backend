@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'config/theme.dart';
 import 'core/services/location_service.dart';
 import 'core/storage/token_storage.dart';
@@ -6,7 +7,9 @@ import 'features/auth/presentation/pages/welcome_page.dart';
 import 'features/location/presentation/pages/location_permission_page.dart';
 import 'features/main/presentation/pages/main_scaffold.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await initializeDateFormatting('tr_TR');
   runApp(const MainApp());
 }
 

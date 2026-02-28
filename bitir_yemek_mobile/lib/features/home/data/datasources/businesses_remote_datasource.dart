@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import '../../../../config/constants.dart';
 import '../../../../core/network/dio_client.dart';
 
 class BusinessesRemoteDataSource {
@@ -107,6 +106,39 @@ class BusinessesRemoteDataSource {
   Future<Map<String, dynamic>> getCategories() async {
     try {
       final response = await _dioClient.dio.get('/categories');
+      return response.data as Map<String, dynamic>;
+    } on DioException catch (e) {
+      throw _handleDioError(e);
+    }
+  }
+
+  Future<Map<String, dynamic>> createReservation({
+    required String packageId,
+    int quantity = 1,
+    String? couponCode,
+  }) async {
+    try {
+      final data = <String, dynamic>{
+        'packageId': packageId,
+        'quantity': quantity,
+      };
+      if (couponCode != null && couponCode.isNotEmpty) {
+        data['couponCode'] = couponCode;
+      }
+
+      final response = await _dioClient.dio.post('/orders', data: data);
+      return response.data as Map<String, dynamic>;
+    } on DioException catch (e) {
+      throw _handleDioError(e);
+    }
+  }
+
+  Future<Map<String, dynamic>> validateCoupon({required String code}) async {
+    try {
+      final response = await _dioClient.dio.post(
+        '/coupons/validate',
+        data: {'code': code},
+      );
       return response.data as Map<String, dynamic>;
     } on DioException catch (e) {
       throw _handleDioError(e);
