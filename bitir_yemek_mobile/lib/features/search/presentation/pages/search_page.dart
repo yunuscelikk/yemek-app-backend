@@ -7,6 +7,7 @@ import '../../../home/data/datasources/businesses_remote_datasource.dart';
 import '../../../home/data/repositories/businesses_repository_impl.dart';
 import '../../../home/presentation/pages/package_detail_page.dart';
 import '../../../home/presentation/widgets/package_card.dart';
+import '../../../favorites/presentation/bloc/favorites_bloc.dart';
 import '../bloc/search_bloc.dart';
 import '../widgets/search_bar.dart';
 import '../widgets/sort_dropdown.dart';
@@ -52,7 +53,6 @@ class SearchView extends StatefulWidget {
 class _SearchViewState extends State<SearchView> {
   final ScrollController _scrollController = ScrollController();
   bool _isListView = true;
-  String _searchQuery = '';
 
   @override
   void initState() {
@@ -99,9 +99,6 @@ class _SearchViewState extends State<SearchView> {
                   // Search Bar
                   CustomSearchBar(
                     onChanged: (value) {
-                      setState(() {
-                        _searchQuery = value;
-                      });
                     },
                     onSubmitted: (value) {
                       // TODO: Implement search query
@@ -173,62 +170,79 @@ class _SearchViewState extends State<SearchView> {
                         ? state.packages
                         : (state as SearchLoadingMore).packages;
                     final isLoadingMore = state is SearchLoadingMore;
-                    final hasReachedMax = state is SearchLoaded
-                        ? state.hasReachedMax
-                        : false;
 
                     if (packages.isEmpty) {
                       return _buildEmptyState();
                     }
 
-                    return RefreshIndicator(
-                      onRefresh: () async {
-                        context.read<SearchBloc>().add(
-                          SearchPackages(
-                            latitude: widget.latitude,
-                            longitude: widget.longitude,
-                          ),
-                        );
-                      },
-                      color: AppColors.primary,
-                      child: ListView.builder(
-                        controller: _scrollController,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.screenPadding,
-                        ),
-                        itemCount: packages.length + (isLoadingMore ? 1 : 0),
-                        itemBuilder: (context, index) {
-                          if (index >= packages.length) {
-                            return const Padding(
-                              padding: EdgeInsets.all(AppSpacing.md),
-                              child: Center(
-                                child: CircularProgressIndicator(
-                                  color: AppColors.primary,
-                                ),
+                    return BlocBuilder<FavoritesBloc, FavoritesState>(
+                      builder: (context, favState) {
+                        final favIds = favState is FavoritesLoaded
+                            ? favState.favorites.map((f) => f.businessId).toSet()
+                            : favState is FavoritesLoadingMore
+                                ? favState.favorites.map((f) => f.businessId).toSet()
+                                : <String>{};
+
+                        return RefreshIndicator(
+                          onRefresh: () async {
+                            context.read<SearchBloc>().add(
+                              SearchPackages(
+                                latitude: widget.latitude,
+                                longitude: widget.longitude,
                               ),
                             );
-                          }
-
-                          return Padding(
-                            padding: const EdgeInsets.only(
-                              bottom: AppSpacing.md,
+                          },
+                          color: AppColors.primary,
+                          child: ListView.builder(
+                            controller: _scrollController,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.screenPadding,
                             ),
-                            child: PackageCard(
-                              package: packages[index],
-                              isHorizontal: false,
-                              onTap: () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (_) => PackageDetailPage(
-                                      package: packages[index],
+                            itemCount: packages.length + (isLoadingMore ? 1 : 0),
+                            itemBuilder: (context, index) {
+                              if (index >= packages.length) {
+                                return const Padding(
+                                  padding: EdgeInsets.all(AppSpacing.md),
+                                  child: Center(
+                                    child: CircularProgressIndicator(
+                                      color: AppColors.primary,
                                     ),
                                   ),
                                 );
-                              },
-                            ),
-                          );
-                        },
-                      ),
+                              }
+
+                              return Padding(
+                                padding: const EdgeInsets.only(
+                                  bottom: AppSpacing.md,
+                                ),
+                                child: PackageCard(
+                                  package: packages[index],
+                                  isHorizontal: false,
+                                  isFavorite: favIds.contains(packages[index].business.id),
+                                  onFavoriteTap: () {
+                                    context.read<FavoritesBloc>().add(
+                                      ToggleFavorite(businessId: packages[index].business.id),
+                                    );
+                                  },
+                                  onTap: () {
+                                    final favBloc = context.read<FavoritesBloc>();
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (_) => BlocProvider.value(
+                                          value: favBloc,
+                                          child: PackageDetailPage(
+                                            package: packages[index],
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              );
+                            },
+                          ),
+                        );
+                      },
                     );
                   }
 
@@ -273,13 +287,13 @@ class _SearchViewState extends State<SearchView> {
             width: 120,
             height: 120,
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.1),
+              color: AppColors.primary.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(
               Icons.search_off,
               size: 60,
-              color: AppColors.primary.withOpacity(0.5),
+              color: AppColors.primary.withValues(alpha: 0.5),
             ),
           ),
           const SizedBox(height: AppSpacing.lg),

@@ -1,5 +1,6 @@
 import '../datasources/businesses_remote_datasource.dart';
 import '../models/business_model.dart';
+import '../models/business_detail_model.dart';
 import '../models/category_model.dart';
 import '../models/package_model.dart';
 import '../models/reservation_model.dart';
@@ -113,11 +114,6 @@ class BusinessesRepositoryImpl implements BusinessesRepository {
         limit: limit,
       );
 
-      // Debug logging
-      print('Packages API Response: $response');
-      print('Data: ${response['data']}');
-      print('Pagination: ${response['pagination']}');
-
       final packagesResponse = PackagesResponse.fromJson(response);
 
       return PackagesResult.success(
@@ -125,10 +121,8 @@ class BusinessesRepositoryImpl implements BusinessesRepository {
         pagination: packagesResponse.pagination,
       );
     } on BusinessesException catch (e) {
-      print('BusinessesException: ${e.message}');
       return PackagesResult.failure(e.message);
     } catch (e) {
-      print('Error: $e');
       return PackagesResult.failure('Bir hata oluştu: $e');
     }
   }
@@ -136,14 +130,11 @@ class BusinessesRepositoryImpl implements BusinessesRepository {
   @override
   Future<CategoriesResult> getCategories() async {
     try {
-      print('Repository: Fetching categories...');
       final response = await _remoteDataSource.getCategories();
-      print('Repository: Categories response: $response');
 
       // Backend returns 'categories' key, not 'data'
       final categoriesData = response['categories'] ?? response['data'];
       if (categoriesData == null) {
-        print('Repository: No categories or data in response');
         return CategoriesResult.failure('Kategori verisi bulunamadı');
       }
 
@@ -151,13 +142,10 @@ class BusinessesRepositoryImpl implements BusinessesRepository {
           .map((e) => CategoryModel.fromJson(e as Map<String, dynamic>))
           .toList();
 
-      print('Repository: Parsed ${categories.length} categories');
       return CategoriesResult.success(categories: categories);
     } on BusinessesException catch (e) {
-      print('Repository: BusinessesException: ${e.message}');
       return CategoriesResult.failure(e.message);
     } catch (e) {
-      print('Repository: Error: $e');
       return CategoriesResult.failure('Bir hata oluştu: $e');
     }
   }
@@ -208,6 +196,24 @@ class BusinessesRepositoryImpl implements BusinessesRepository {
       return CouponResult.failure(e.message);
     } catch (e) {
       return CouponResult.failure('Bir hata olustu: $e');
+    }
+  }
+
+  @override
+  Future<BusinessDetailResult> getBusinessDetail(String businessId) async {
+    try {
+      final response = await _remoteDataSource.getBusinessDetail(businessId);
+      final businessData = response['business'] as Map<String, dynamic>?;
+      if (businessData == null) {
+        return BusinessDetailResult.failure('Isletme bilgisi bulunamadi');
+      }
+
+      final detail = BusinessDetailModel.fromJson(businessData);
+      return BusinessDetailResult.success(detail: detail);
+    } on BusinessesException catch (e) {
+      return BusinessDetailResult.failure(e.message);
+    } catch (e) {
+      return BusinessDetailResult.failure('Bir hata olustu: $e');
     }
   }
 }
@@ -328,5 +334,21 @@ class BusinessesResult {
 
   factory BusinessesResult.failure(String error) {
     return BusinessesResult._(isSuccess: false, error: error);
+  }
+}
+
+class BusinessDetailResult {
+  final bool isSuccess;
+  final BusinessDetailModel? detail;
+  final String? error;
+
+  BusinessDetailResult._({required this.isSuccess, this.detail, this.error});
+
+  factory BusinessDetailResult.success({required BusinessDetailModel detail}) {
+    return BusinessDetailResult._(isSuccess: true, detail: detail);
+  }
+
+  factory BusinessDetailResult.failure(String error) {
+    return BusinessDetailResult._(isSuccess: false, error: error);
   }
 }

@@ -1,12 +1,19 @@
-const router = require('express').Router();
-const favoriteController = require('../controllers/favoriteController');
-const { authenticate } = require('../middlewares/auth');
-const { validate, validateQuery, validateParams } = require('../middlewares/validate');
-const { paginationSchema, idParamSchema } = require('../validations/schemas');
-const { z } = require('zod');
+const router = require("express").Router();
+const favoriteController = require("../controllers/favoriteController");
+const { authenticate } = require("../middlewares/auth");
+const {
+  validate,
+  validateQuery,
+  validateParams,
+} = require("../middlewares/validate");
+const {
+  paginationSchema,
+  businessIdParamSchema,
+} = require("../validations/schemas");
+const { z } = require("zod");
 
 const addFavoriteSchema = z.object({
-  businessId: z.string().uuid('Geçerli bir işletme ID girin'),
+  businessId: z.string().uuid("Geçerli bir işletme ID girin"),
 });
 
 /**
@@ -37,7 +44,12 @@ const addFavoriteSchema = z.object({
  *       200:
  *         description: Favori listesi
  */
-router.get('/', authenticate, validateQuery(paginationSchema), favoriteController.getAll);
+router.get(
+  "/",
+  authenticate,
+  validateQuery(paginationSchema),
+  favoriteController.getAll,
+);
 
 /**
  * @swagger
@@ -65,7 +77,12 @@ router.get('/', authenticate, validateQuery(paginationSchema), favoriteControlle
  *       409:
  *         description: Zaten favorilerde
  */
-router.post('/', authenticate, validate(addFavoriteSchema), favoriteController.add);
+router.post(
+  "/",
+  authenticate,
+  validate(addFavoriteSchema),
+  favoriteController.add,
+);
 
 /**
  * @swagger
@@ -86,7 +103,12 @@ router.post('/', authenticate, validate(addFavoriteSchema), favoriteController.a
  *       200:
  *         description: Favori durumu
  */
-router.get('/check/:businessId', authenticate, validateParams(idParamSchema), favoriteController.check);
+router.get(
+  "/check/:businessId",
+  authenticate,
+  validateParams(businessIdParamSchema),
+  favoriteController.check,
+);
 
 /**
  * @swagger
@@ -107,6 +129,11 @@ router.get('/check/:businessId', authenticate, validateParams(idParamSchema), fa
  *       200:
  *         description: Favorilerden kaldırıldı
  */
-router.delete('/:businessId', authenticate, validateParams(idParamSchema), favoriteController.remove);
+router.delete(
+  "/:businessId",
+  authenticate,
+  validateParams(businessIdParamSchema),
+  favoriteController.remove,
+);
 
 module.exports = router;

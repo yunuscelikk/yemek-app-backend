@@ -39,4 +39,6 @@ abstract class BusinessesRepository {
   });
 
   Future<CouponResult> validateCoupon({required String code});
+
+  Future<BusinessDetailResult> getBusinessDetail(String businessId);
 }

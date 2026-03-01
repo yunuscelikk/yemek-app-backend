@@ -18,6 +18,10 @@ import '../../../orders/presentation/bloc/orders_bloc.dart';
 import '../../../orders/presentation/pages/orders_page.dart';
 import '../../../search/presentation/bloc/search_bloc.dart';
 import '../../../search/presentation/pages/search_page.dart';
+import '../../../favorites/data/datasources/favorites_remote_datasource.dart';
+import '../../../favorites/data/repositories/favorites_repository_impl.dart';
+import '../../../favorites/presentation/bloc/favorites_bloc.dart';
+import '../../../favorites/presentation/pages/favorites_page.dart';
 
 class MainScaffold extends StatefulWidget {
   final double latitude;
@@ -98,6 +102,21 @@ class _MainScaffoldState extends State<MainScaffold> {
             )..add(const LoadOrders());
           },
         ),
+        // Favorites Bloc
+        BlocProvider(
+          create: (context) {
+            final tokenStorage = SharedPrefsTokenStorage();
+            final dioClient = DioClient();
+            return FavoritesBloc(
+              repository: FavoritesRepositoryImpl(
+                remoteDataSource: FavoritesRemoteDataSource(
+                  dioClient: dioClient,
+                  tokenStorage: tokenStorage,
+                ),
+              ),
+            )..add(const LoadFavorites());
+          },
+        ),
         // Profile Bloc
         BlocProvider(
           create: (context) {
@@ -132,7 +151,13 @@ class _MainScaffoldState extends State<MainScaffold> {
               },
             ),
             // 3 - Favoriler (Favorites)
-            const _PlaceholderScreen(title: 'Favorilerim'),
+            FavoritesPage(
+              onNavigateToHome: () {
+                setState(() {
+                  _currentIndex = 0;
+                });
+              },
+            ),
             // 4 - Profil (Profile)
             ProfilePage(
               onTabSwitch: (index) {
@@ -156,32 +181,3 @@ class _MainScaffoldState extends State<MainScaffold> {
   }
 }
 
-class _PlaceholderScreen extends StatelessWidget {
-  final String title;
-
-  const _PlaceholderScreen({required this.title});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(title),
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        elevation: 0,
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.construction, size: 64, color: Colors.grey[400]),
-            const SizedBox(height: 16),
-            Text(
-              '$title yakında geliyor',
-              style: TextStyle(fontSize: 18, color: Colors.grey[600]),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}

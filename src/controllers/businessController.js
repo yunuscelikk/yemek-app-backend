@@ -1,6 +1,16 @@
-const { Business, Category, User, Review } = require('../models');
-const { Op } = require('sequelize');
-const { paginate, paginatedResponse, haversineDistance } = require('../utils/helpers');
+const {
+  Business,
+  Category,
+  User,
+  Review,
+  SurprisePackage,
+} = require("../models");
+const { Op } = require("sequelize");
+const {
+  paginate,
+  paginatedResponse,
+  haversineDistance,
+} = require("../utils/helpers");
 
 exports.getAll = async (req, res, next) => {
   try {
@@ -16,9 +26,9 @@ exports.getAll = async (req, res, next) => {
     const { count, rows: businesses } = await Business.findAndCountAll({
       where,
       include: [
-        { model: Category, as: 'category', attributes: ['id', 'name', 'slug'] },
+        { model: Category, as: "category", attributes: ["id", "name", "slug"] },
       ],
-      order: [['createdAt', 'DESC']],
+      order: [["createdAt", "DESC"]],
       limit,
       offset,
     });
@@ -31,20 +41,22 @@ exports.getAll = async (req, res, next) => {
       const userLng = parseFloat(lng);
       const maxRadius = parseFloat(radius); // km
 
-      resultBusinesses = businesses.filter(business => {
+      resultBusinesses = businesses.filter((business) => {
         if (!business.latitude || !business.longitude) return false;
         const distance = haversineDistance(
           userLat,
           userLng,
           parseFloat(business.latitude),
-          parseFloat(business.longitude)
+          parseFloat(business.longitude),
         );
-        business.setDataValue('distance', distance);
+        business.setDataValue("distance", distance);
         return distance <= maxRadius;
       });
 
       // Mesafeye göre sırala
-      resultBusinesses.sort((a, b) => a.getDataValue('distance') - b.getDataValue('distance'));
+      resultBusinesses.sort(
+        (a, b) => a.getDataValue("distance") - b.getDataValue("distance"),
+      );
     }
 
     res.json(paginatedResponse(resultBusinesses, count, page, limit));
@@ -57,14 +69,24 @@ exports.getById = async (req, res, next) => {
   try {
     const business = await Business.findByPk(req.params.id, {
       include: [
-        { model: Category, as: 'category', attributes: ['id', 'name', 'slug'] },
-        { model: User, as: 'owner', attributes: ['id', 'name', 'email'] },
-        { model: Review, as: 'reviews', include: [{ model: User, as: 'user', attributes: ['id', 'name'] }] },
+        { model: Category, as: "category", attributes: ["id", "name", "slug"] },
+        { model: User, as: "owner", attributes: ["id", "name", "email"] },
+        {
+          model: Review,
+          as: "reviews",
+          include: [{ model: User, as: "user", attributes: ["id", "name"] }],
+        },
+        {
+          model: SurprisePackage,
+          as: "packages",
+          where: { isActive: true, remainingQuantity: { [Op.gt]: 0 } },
+          required: false,
+        },
       ],
     });
 
     if (!business) {
-      return res.status(404).json({ message: 'İşletme bulunamadı' });
+      return res.status(404).json({ message: "İşletme bulunamadı" });
     }
 
     res.json({ business });
@@ -75,7 +97,18 @@ exports.getById = async (req, res, next) => {
 
 exports.create = async (req, res, next) => {
   try {
-    const { name, description, address, city, district, latitude, longitude, phone, imageUrl, categoryId } = req.body;
+    const {
+      name,
+      description,
+      address,
+      city,
+      district,
+      latitude,
+      longitude,
+      phone,
+      imageUrl,
+      categoryId,
+    } = req.body;
 
     const business = await Business.create({
       ownerId: req.user.id,
@@ -92,7 +125,7 @@ exports.create = async (req, res, next) => {
     });
 
     res.status(201).json({
-      message: 'İşletme oluşturuldu',
+      message: "İşletme oluşturuldu",
       business,
     });
   } catch (error) {
@@ -105,22 +138,45 @@ exports.update = async (req, res, next) => {
     const business = await Business.findByPk(req.params.id);
 
     if (!business) {
-      return res.status(404).json({ message: 'İşletme bulunamadı' });
+      return res.status(404).json({ message: "İşletme bulunamadı" });
     }
 
-    if (business.ownerId !== req.user.id && req.user.role !== 'admin') {
-      return res.status(403).json({ message: 'Bu işletmeyi güncelleme yetkiniz yok' });
+    if (business.ownerId !== req.user.id && req.user.role !== "admin") {
+      return res
+        .status(403)
+        .json({ message: "Bu işletmeyi güncelleme yetkiniz yok" });
     }
 
-    const { name, description, address, city, district, latitude, longitude, phone, imageUrl, categoryId, isActive } = req.body;
+    const {
+      name,
+      description,
+      address,
+      city,
+      district,
+      latitude,
+      longitude,
+      phone,
+      imageUrl,
+      categoryId,
+      isActive,
+    } = req.body;
 
     await business.update({
-      name, description, address, city, district,
-      latitude, longitude, phone, imageUrl, categoryId, isActive,
+      name,
+      description,
+      address,
+      city,
+      district,
+      latitude,
+      longitude,
+      phone,
+      imageUrl,
+      categoryId,
+      isActive,
     });
 
     res.json({
-      message: 'İşletme güncellendi',
+      message: "İşletme güncellendi",
       business,
     });
   } catch (error) {
@@ -133,16 +189,18 @@ exports.remove = async (req, res, next) => {
     const business = await Business.findByPk(req.params.id);
 
     if (!business) {
-      return res.status(404).json({ message: 'İşletme bulunamadı' });
+      return res.status(404).json({ message: "İşletme bulunamadı" });
     }
 
-    if (business.ownerId !== req.user.id && req.user.role !== 'admin') {
-      return res.status(403).json({ message: 'Bu işletmeyi silme yetkiniz yok' });
+    if (business.ownerId !== req.user.id && req.user.role !== "admin") {
+      return res
+        .status(403)
+        .json({ message: "Bu işletmeyi silme yetkiniz yok" });
     }
 
     await business.destroy();
 
-    res.json({ message: 'İşletme silindi' });
+    res.json({ message: "İşletme silindi" });
   } catch (error) {
     next(error);
   }

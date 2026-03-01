@@ -145,6 +145,15 @@ class BusinessesRemoteDataSource {
     }
   }
 
+  Future<Map<String, dynamic>> getBusinessDetail(String businessId) async {
+    try {
+      final response = await _dioClient.dio.get('/businesses/$businessId');
+      return response.data as Map<String, dynamic>;
+    } on DioException catch (e) {
+      throw _handleDioError(e);
+    }
+  }
+
   Exception _handleDioError(DioException e) {
     if (e.response != null) {
       final data = e.response?.data as Map<String, dynamic>?;

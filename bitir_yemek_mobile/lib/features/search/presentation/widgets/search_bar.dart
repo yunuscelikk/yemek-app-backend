@@ -54,7 +54,7 @@ class CustomSearchBar extends StatelessWidget {
             height: 40,
             margin: const EdgeInsets.only(right: AppSpacing.xs),
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.1),
+              color: AppColors.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(AppRadius.md),
             ),
             child: IconButton(
@@ -71,7 +71,7 @@ class CustomSearchBar extends StatelessWidget {
             height: 40,
             margin: const EdgeInsets.only(right: AppSpacing.xs),
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.1),
+              color: AppColors.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(AppRadius.md),
             ),
             child: IconButton(

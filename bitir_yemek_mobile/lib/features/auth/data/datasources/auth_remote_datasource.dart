@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
 import '../../../../core/network/dio_client.dart';
-import '../models/user_model.dart';
 
 class AuthRemoteDataSource {
   final DioClient _dioClient;
@@ -33,7 +32,7 @@ class AuthRemoteDataSource {
           'name': name,
           'email': email,
           'password': password,
-          if (phone != null) 'phone': phone,
+          'phone': ?phone,
         },
       );
 

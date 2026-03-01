@@ -2,17 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../config/theme.dart';
 import '../../../../core/network/dio_client.dart';
-import '../../../../core/utils/responsive.dart';
 import '../../../../shared/widgets/shimmer_loader.dart';
 import '../../data/datasources/businesses_remote_datasource.dart';
 import '../../data/models/category_model.dart';
 import '../../data/repositories/businesses_repository_impl.dart';
-import '../../domain/repositories/businesses_repository.dart';
 import '../bloc/home_bloc.dart';
 import '../bloc/packages_bloc.dart';
 import '../widgets/category_chips.dart';
 import '../widgets/location_header.dart';
 import '../widgets/package_card.dart';
+import '../../../favorites/presentation/bloc/favorites_bloc.dart';
 import 'package_detail_page.dart';
 
 class HomePage extends StatelessWidget {
@@ -254,182 +253,208 @@ class _HomeViewState extends State<HomeView> {
                         ? state.packages!
                         : (state as PackagesLoadingMore).packages;
 
-                    final hasReachedMax = state is PackagesLoaded
-                        ? state.hasReachedMax
-                        : false;
-
                     final isLoadingMore = state is PackagesLoadingMore;
 
                     if (packages.isEmpty) {
                       return _buildEmptyState();
                     }
 
-                    return RefreshIndicator(
-                      onRefresh: () async {
-                        context.read<PackagesBloc>().add(
-                          LoadNearbyPackages(
-                            latitude: widget.latitude,
-                            longitude: widget.longitude,
-                          ),
-                        );
-                      },
-                      color: AppColors.primary,
-                      child: CustomScrollView(
-                        controller: _scrollController,
-                        slivers: [
-                          // Popular Section Title
-                          SliverToBoxAdapter(
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: AppSpacing.screenPadding,
-                                vertical: AppSpacing.md,
-                              ),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      'Yakınınızdaki popüler seçimler',
-                                      style: AppTypography.h3.copyWith(
-                                        fontSize: 15,
-                                      ),
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                  TextButton(
-                                    onPressed: () {
-                                      // TODO: Navigate to all packages
-                                    },
-                                    child: Text(
-                                      'Hepsini Gör',
-                                      style: AppTypography.bodyMedium.copyWith(
-                                        color: AppColors.primary,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
+                    return BlocBuilder<FavoritesBloc, FavoritesState>(
+                      builder: (context, favState) {
+                        final favIds = favState is FavoritesLoaded
+                            ? favState.favorites.map((f) => f.businessId).toSet()
+                            : favState is FavoritesLoadingMore
+                                ? favState.favorites.map((f) => f.businessId).toSet()
+                                : <String>{};
 
-                          // Horizontal Package List
-                          SliverToBoxAdapter(
-                            child: SizedBox(
-                              height: 290,
-                              child: ListView.builder(
-                                scrollDirection: Axis.horizontal,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: AppSpacing.screenPadding,
+                        return RefreshIndicator(
+                          onRefresh: () async {
+                            context.read<PackagesBloc>().add(
+                              LoadNearbyPackages(
+                                latitude: widget.latitude,
+                                longitude: widget.longitude,
+                              ),
+                            );
+                          },
+                          color: AppColors.primary,
+                          child: CustomScrollView(
+                            controller: _scrollController,
+                            slivers: [
+                              // Popular Section Title
+                              SliverToBoxAdapter(
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: AppSpacing.screenPadding,
+                                    vertical: AppSpacing.md,
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          'Yakınınızdaki popüler seçimler',
+                                          style: AppTypography.h3.copyWith(
+                                            fontSize: 15,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          // TODO: Navigate to all packages
+                                        },
+                                        child: Text(
+                                          'Hepsini Gör',
+                                          style: AppTypography.bodyMedium.copyWith(
+                                            color: AppColors.primary,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                                itemCount: packages.length > 5
-                                    ? 5
-                                    : packages.length,
-                                itemBuilder: (context, index) {
-                                  return Padding(
-                                    padding: const EdgeInsets.only(
-                                      right: AppSpacing.md,
-                                    ),
-                                    child: PackageCard(
-                                      package: packages[index],
-                                      isHorizontal: true,
-                                      onTap: () {
-                                        Navigator.of(context).push(
-                                          MaterialPageRoute(
-                                            builder: (_) => PackageDetailPage(
-                                              package: packages[index],
-                                            ),
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                  );
-                                },
                               ),
-                            ),
-                          ),
 
-                          // Local Best Section Title
-                          SliverToBoxAdapter(
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: AppSpacing.screenPadding,
-                                vertical: AppSpacing.md,
-                              ),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      'Yerel En İyiler',
-                                      style: AppTypography.h3.copyWith(
-                                        fontSize: 18,
-                                      ),
-                                      overflow: TextOverflow.ellipsis,
+                              // Horizontal Package List
+                              SliverToBoxAdapter(
+                                child: SizedBox(
+                                  height: 290,
+                                  child: ListView.builder(
+                                    scrollDirection: Axis.horizontal,
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: AppSpacing.screenPadding,
                                     ),
-                                  ),
-                                  TextButton(
-                                    onPressed: () {
-                                      // TODO: Navigate to all packages
-                                    },
-                                    child: Text(
-                                      'Hepsini Gör',
-                                      style: AppTypography.bodyMedium.copyWith(
-                                        color: AppColors.primary,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-
-                          // Vertical Package List
-                          SliverPadding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: AppSpacing.screenPadding,
-                            ),
-                            sliver: SliverList.builder(
-                              itemCount:
-                                  packages.length + (isLoadingMore ? 1 : 0),
-                              itemBuilder: (context, index) {
-                                if (index >= packages.length) {
-                                  return const Padding(
-                                    padding: EdgeInsets.all(AppSpacing.md),
-                                    child: Center(
-                                      child: CircularProgressIndicator(
-                                        color: AppColors.primary,
-                                      ),
-                                    ),
-                                  );
-                                }
-
-                                return Padding(
-                                  padding: const EdgeInsets.only(
-                                    bottom: AppSpacing.md,
-                                  ),
-                                  child: PackageCard(
-                                    package: packages[index],
-                                    isHorizontal: false,
-                                    onTap: () {
-                                      Navigator.of(context).push(
-                                        MaterialPageRoute(
-                                          builder: (_) => PackageDetailPage(
-                                            package: packages[index],
-                                          ),
+                                    itemCount: packages.length > 5
+                                        ? 5
+                                        : packages.length,
+                                    itemBuilder: (context, index) {
+                                      return Padding(
+                                        padding: const EdgeInsets.only(
+                                          right: AppSpacing.md,
+                                        ),
+                                        child: PackageCard(
+                                          package: packages[index],
+                                          isHorizontal: true,
+                                          isFavorite: favIds.contains(packages[index].business.id),
+                                          onFavoriteTap: () {
+                                            context.read<FavoritesBloc>().add(
+                                              ToggleFavorite(businessId: packages[index].business.id),
+                                            );
+                                          },
+                                          onTap: () {
+                                            final favBloc = context.read<FavoritesBloc>();
+                                            Navigator.of(context).push(
+                                              MaterialPageRoute(
+                                                builder: (_) => BlocProvider.value(
+                                                  value: favBloc,
+                                                  child: PackageDetailPage(
+                                                    package: packages[index],
+                                                  ),
+                                                ),
+                                              ),
+                                            );
+                                          },
                                         ),
                                       );
                                     },
                                   ),
-                                );
-                              },
-                            ),
+                                ),
+                              ),
+
+                              // Local Best Section Title
+                              SliverToBoxAdapter(
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: AppSpacing.screenPadding,
+                                    vertical: AppSpacing.md,
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          'Yerel En İyiler',
+                                          style: AppTypography.h3.copyWith(
+                                            fontSize: 18,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          // TODO: Navigate to all packages
+                                        },
+                                        child: Text(
+                                          'Hepsini Gör',
+                                          style: AppTypography.bodyMedium.copyWith(
+                                            color: AppColors.primary,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+
+                              // Vertical Package List
+                              SliverPadding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: AppSpacing.screenPadding,
+                                ),
+                                sliver: SliverList.builder(
+                                  itemCount:
+                                      packages.length + (isLoadingMore ? 1 : 0),
+                                  itemBuilder: (context, index) {
+                                    if (index >= packages.length) {
+                                      return const Padding(
+                                        padding: EdgeInsets.all(AppSpacing.md),
+                                        child: Center(
+                                          child: CircularProgressIndicator(
+                                            color: AppColors.primary,
+                                          ),
+                                        ),
+                                      );
+                                    }
+
+                                    return Padding(
+                                      padding: const EdgeInsets.only(
+                                        bottom: AppSpacing.md,
+                                      ),
+                                      child: PackageCard(
+                                        package: packages[index],
+                                        isHorizontal: false,
+                                        isFavorite: favIds.contains(packages[index].business.id),
+                                        onFavoriteTap: () {
+                                          context.read<FavoritesBloc>().add(
+                                            ToggleFavorite(businessId: packages[index].business.id),
+                                          );
+                                        },
+                                        onTap: () {
+                                          final favBloc = context.read<FavoritesBloc>();
+                                          Navigator.of(context).push(
+                                            MaterialPageRoute(
+                                              builder: (_) => BlocProvider.value(
+                                                value: favBloc,
+                                                child: PackageDetailPage(
+                                                  package: packages[index],
+                                                ),
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
+                        );
+                      },
                     );
                   }
 
@@ -452,13 +477,13 @@ class _HomeViewState extends State<HomeView> {
             width: 120,
             height: 120,
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.1),
+              color: AppColors.primary.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(
               Icons.shopping_bag_outlined,
               size: 60,
-              color: AppColors.primary.withOpacity(0.5),
+              color: AppColors.primary.withValues(alpha: 0.5),
             ),
           ),
           const SizedBox(height: AppSpacing.lg),

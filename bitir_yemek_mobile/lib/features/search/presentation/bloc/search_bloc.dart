@@ -1,7 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import '../../../home/data/models/package_model.dart';
-import '../../../home/data/repositories/businesses_repository_impl.dart';
 import '../../../home/domain/repositories/businesses_repository.dart';
 
 part 'search_event.dart';

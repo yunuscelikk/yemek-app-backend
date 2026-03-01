@@ -5,6 +5,7 @@ import '../../data/models/package_model.dart';
 class PackageCard extends StatelessWidget {
   final PackageModel package;
   final bool isHorizontal;
+  final bool isFavorite;
   final VoidCallback? onTap;
   final VoidCallback? onFavoriteTap;
 
@@ -12,6 +13,7 @@ class PackageCard extends StatelessWidget {
     super.key,
     required this.package,
     this.isHorizontal = false,
+    this.isFavorite = false,
     this.onTap,
     this.onFavoriteTap,
   });
@@ -100,7 +102,7 @@ class PackageCard extends StatelessWidget {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.95),
+                      color: Colors.white.withValues(alpha: 0.95),
                       borderRadius: BorderRadius.circular(AppRadius.sm),
                       boxShadow: [
                         BoxShadow(
@@ -172,9 +174,11 @@ class PackageCard extends StatelessWidget {
                     GestureDetector(
                       onTap: onFavoriteTap,
                       child: Icon(
-                        Icons.favorite_border,
+                        isFavorite ? Icons.favorite : Icons.favorite_border,
                         size: 22,
-                        color: AppColors.textHint,
+                        color: isFavorite
+                            ? AppColors.error
+                            : AppColors.textHint,
                       ),
                     ),
                   ],
@@ -247,11 +251,11 @@ class PackageCard extends StatelessWidget {
             Icon(
               Icons.restaurant,
               size: 40,
-              color: AppColors.textHint.withOpacity(0.5),
+              color: AppColors.textHint.withValues(alpha: 0.5),
             ),
             const SizedBox(height: 8),
             Text(
-              package.business.category?.name ?? 'Restoran',
+              package.business.category.name,
               style: AppTypography.bodySmall.copyWith(
                 color: AppColors.textHint,
               ),
@@ -345,9 +349,11 @@ class PackageCard extends StatelessWidget {
                       GestureDetector(
                         onTap: onFavoriteTap,
                         child: Icon(
-                          Icons.favorite_border,
+                          isFavorite ? Icons.favorite : Icons.favorite_border,
                           size: 22,
-                          color: AppColors.textHint,
+                          color: isFavorite
+                              ? AppColors.error
+                              : AppColors.textHint,
                         ),
                       ),
                     ],
@@ -415,7 +421,7 @@ class PackageCard extends StatelessWidget {
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: AppColors.error.withOpacity(0.1),
+                            color: AppColors.error.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(

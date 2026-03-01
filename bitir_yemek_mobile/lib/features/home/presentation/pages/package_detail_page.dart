@@ -8,6 +8,7 @@ import '../../data/models/package_model.dart';
 import '../../data/repositories/businesses_repository_impl.dart';
 import '../../data/datasources/businesses_remote_datasource.dart';
 import '../bloc/reservation_bloc.dart';
+import '../../../favorites/presentation/bloc/favorites_bloc.dart';
 import '../widgets/package_info_card.dart';
 import '../widgets/reservation_confirm_sheet.dart';
 import 'reservation_success_page.dart';
@@ -110,6 +111,13 @@ class _PackageDetailView extends StatelessWidget {
   }
 
   Widget _buildSliverAppBar(BuildContext context) {
+    FavoritesBloc? favBloc;
+    try {
+      favBloc = context.read<FavoritesBloc>();
+    } catch (_) {
+      // FavoritesBloc not available in this route
+    }
+
     return SliverAppBar(
       expandedHeight: 280,
       pinned: true,
@@ -133,31 +141,45 @@ class _PackageDetailView extends StatelessWidget {
         ),
       ),
       actions: [
-        GestureDetector(
-          onTap: () {
-            // TODO: Favorite toggle
-          },
-          child: Container(
-            margin: const EdgeInsets.all(8),
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.9),
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.shadow,
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
+        if (favBloc != null)
+          BlocBuilder<FavoritesBloc, FavoritesState>(
+            bloc: favBloc,
+            builder: (context, favState) {
+              final isFav = favState is FavoritesLoaded
+                  ? favState.favorites.any((f) => f.businessId == package.business.id)
+                  : favState is FavoritesLoadingMore
+                      ? favState.favorites.any((f) => f.businessId == package.business.id)
+                      : false;
+
+              return GestureDetector(
+                onTap: () {
+                  favBloc!.add(
+                    ToggleFavorite(businessId: package.business.id),
+                  );
+                },
+                child: Container(
+                  margin: const EdgeInsets.all(8),
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.9),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.shadow,
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    isFav ? Icons.favorite : Icons.favorite_border,
+                    color: isFav ? AppColors.error : AppColors.textPrimary,
+                    size: 22,
+                  ),
                 ),
-              ],
-            ),
-            child: const Icon(
-              Icons.favorite_border,
-              color: AppColors.textPrimary,
-              size: 22,
-            ),
+              );
+            },
           ),
-        ),
       ],
       flexibleSpace: FlexibleSpaceBar(
         background: Stack(
