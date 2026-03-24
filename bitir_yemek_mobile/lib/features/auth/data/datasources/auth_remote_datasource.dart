@@ -24,17 +24,18 @@ class AuthRemoteDataSource {
     required String email,
     required String password,
     String? phone,
+    String role = 'customer',
   }) async {
     try {
-      final response = await _dioClient.dio.post(
-        '/auth/register',
-        data: {
-          'name': name,
-          'email': email,
-          'password': password,
-          'phone': ?phone,
-        },
-      );
+      final data = <String, dynamic>{
+        'name': name,
+        'email': email,
+        'password': password,
+        'role': role,
+      };
+      if (phone != null && phone.isNotEmpty) data['phone'] = phone;
+
+      final response = await _dioClient.dio.post('/auth/register', data: data);
 
       return response.data as Map<String, dynamic>;
     } on DioException catch (e) {

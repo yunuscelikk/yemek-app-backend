@@ -2,22 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../config/theme.dart';
 import '../../../../core/network/dio_client.dart';
-import '../../../../core/services/location_service.dart';
 import '../../../../core/storage/token_storage.dart';
 import '../../../../core/utils/responsive.dart';
-import '../../../business_owner/presentation/pages/business_owner_scaffold.dart';
-import '../../../location/presentation/pages/location_permission_page.dart';
-import '../../../main/presentation/pages/main_scaffold.dart';
 import '../../data/datasources/auth_remote_datasource.dart';
 import '../../data/repositories/auth_repository_impl.dart';
 import '../../domain/user_type.dart';
 import '../bloc/auth_bloc.dart';
-import 'register_page.dart';
+import 'email_verification_page.dart';
 
-class LoginPage extends StatelessWidget {
+class RegisterPage extends StatelessWidget {
   final UserType userType;
 
-  const LoginPage({super.key, this.userType = UserType.customer});
+  const RegisterPage({super.key, this.userType = UserType.customer});
 
   @override
   Widget build(BuildContext context) {
@@ -31,91 +27,52 @@ class LoginPage extends StatelessWidget {
           tokenStorage: tokenStorage,
         ),
       ),
-      child: LoginView(userType: userType),
+      child: RegisterView(userType: userType),
     );
   }
 }
 
-class LoginView extends StatefulWidget {
+class RegisterView extends StatefulWidget {
   final UserType userType;
 
-  const LoginView({super.key, required this.userType});
+  const RegisterView({super.key, required this.userType});
 
   @override
-  State<LoginView> createState() => _LoginViewState();
+  State<RegisterView> createState() => _RegisterViewState();
 }
 
-class _LoginViewState extends State<LoginView> {
+class _RegisterViewState extends State<RegisterView> {
   final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
   final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
   bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
 
   @override
   void dispose() {
+    _nameController.dispose();
     _emailController.dispose();
+    _phoneController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
-  void _onLoginPressed() {
+  void _onRegisterPressed() {
     if (_formKey.currentState?.validate() ?? false) {
       context.read<AuthBloc>().add(
-        LoginRequested(
+        RegisterRequested(
+          name: _nameController.text.trim(),
           email: _emailController.text.trim(),
           password: _passwordController.text,
+          phone: _phoneController.text.trim().isEmpty
+              ? null
+              : _phoneController.text.trim(),
+          role: widget.userType.role,
         ),
-      );
-    }
-  }
-
-  Future<void> _navigateAfterLogin(BuildContext context, String role) async {
-    final isBusinessOwner = role == 'business_owner';
-    final locationService = LocationService();
-    final hasPermission = await locationService.hasPermission();
-
-    if (!context.mounted) return;
-
-    if (isBusinessOwner) {
-      if (hasPermission) {
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(
-            builder: (context) => const BusinessOwnerScaffold(),
-          ),
-          (route) => false,
-        );
-      } else {
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(
-            builder: (context) =>
-                const LocationPermissionPage(isBusinessOwner: true),
-          ),
-          (route) => false,
-        );
-      }
-      return;
-    }
-
-    if (hasPermission) {
-      final position = await locationService.getCurrentPosition();
-      if (position != null && context.mounted) {
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(
-            builder: (context) => MainScaffold(
-              latitude: position.latitude,
-              longitude: position.longitude,
-            ),
-          ),
-          (route) => false,
-        );
-        return;
-      }
-    }
-
-    if (context.mounted) {
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (context) => const LocationPermissionPage()),
-        (route) => false,
       );
     }
   }
@@ -133,9 +90,16 @@ class _LoginViewState extends State<LoginView> {
         ),
       ),
       body: BlocConsumer<AuthBloc, AuthState>(
-        listener: (context, state) async {
-          if (state is AuthAuthenticated) {
-            await _navigateAfterLogin(context, state.user.role);
+        listener: (context, state) {
+          if (state is AuthRegistrationSuccess) {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                builder: (context) => EmailVerificationPage(
+                  email: state.email,
+                  message: state.message,
+                ),
+              ),
+            );
           } else if (state is AuthError) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -147,6 +111,8 @@ class _LoginViewState extends State<LoginView> {
         },
         builder: (context, state) {
           final responsive = context.responsive;
+          final isLoading = state is AuthLoading;
+
           return SafeArea(
             child: SingleChildScrollView(
               padding: EdgeInsets.all(responsive.screenPadding),
@@ -191,7 +157,7 @@ class _LoginViewState extends State<LoginView> {
 
                     // Title
                     Text(
-                      widget.userType.loginTitle,
+                      widget.userType.registerTitle,
                       style: AppTypography.h2.copyWith(
                         color: AppColors.textPrimary,
                         fontWeight: FontWeight.bold,
@@ -200,45 +166,92 @@ class _LoginViewState extends State<LoginView> {
 
                     SizedBox(height: responsive.padding(AppSpacing.sm)),
 
-                    // Subtitle
                     Text(
-                      widget.userType.loginSubtitle,
+                      widget.userType.registerSubtitle,
                       style: AppTypography.bodyMedium.copyWith(
                         color: AppColors.textSecondary,
                       ),
                     ),
 
-                    SizedBox(height: responsive.padding(AppSpacing.xxl)),
+                    SizedBox(height: responsive.padding(AppSpacing.xl)),
+
+                    // Name Field
+                    TextFormField(
+                      controller: _nameController,
+                      keyboardType: TextInputType.name,
+                      textCapitalization: TextCapitalization.words,
+                      enabled: !isLoading,
+                      decoration: const InputDecoration(
+                        hintText: 'Ad Soyad',
+                        prefixIcon: Icon(Icons.person_outline),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Ad Soyad gerekli';
+                        }
+                        if (value.trim().length < 2) {
+                          return 'Ad Soyad en az 2 karakter olmalı';
+                        }
+                        return null;
+                      },
+                    ),
+
+                    const SizedBox(height: AppSpacing.md),
 
                     // Email Field
                     TextFormField(
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
-                      enabled: state is! AuthLoading,
+                      enabled: !isLoading,
                       decoration: const InputDecoration(
                         hintText: 'E-posta adresiniz',
                         prefixIcon: Icon(Icons.email_outlined),
                       ),
                       validator: (value) {
-                        if (value == null || value.isEmpty) {
+                        if (value == null || value.trim().isEmpty) {
                           return 'E-posta adresi gerekli';
                         }
-                        if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
+                        if (!RegExp(
+                          r'^[^@]+@[^@]+\.[^@]+',
+                        ).hasMatch(value.trim())) {
                           return 'Geçerli bir e-posta adresi girin';
                         }
                         return null;
                       },
                     ),
 
-                    const SizedBox(height: AppSpacing.lg),
+                    const SizedBox(height: AppSpacing.md),
+
+                    // Phone Field (optional)
+                    TextFormField(
+                      controller: _phoneController,
+                      keyboardType: TextInputType.phone,
+                      enabled: !isLoading,
+                      decoration: const InputDecoration(
+                        hintText: 'Telefon numaranız (isteğe bağlı)',
+                        prefixIcon: Icon(Icons.phone_outlined),
+                      ),
+                      validator: (value) {
+                        if (value != null && value.trim().isNotEmpty) {
+                          if (!RegExp(
+                            r'^[0-9]{10,11}$',
+                          ).hasMatch(value.trim())) {
+                            return 'Geçerli bir telefon numarası girin';
+                          }
+                        }
+                        return null;
+                      },
+                    ),
+
+                    const SizedBox(height: AppSpacing.md),
 
                     // Password Field
                     TextFormField(
                       controller: _passwordController,
                       obscureText: _obscurePassword,
-                      enabled: state is! AuthLoading,
+                      enabled: !isLoading,
                       decoration: InputDecoration(
-                        hintText: 'Şifreniz',
+                        hintText: 'Şifreniz (en az 6 karakter)',
                         prefixIcon: const Icon(Icons.lock_outline),
                         suffixIcon: IconButton(
                           icon: Icon(
@@ -267,33 +280,48 @@ class _LoginViewState extends State<LoginView> {
 
                     const SizedBox(height: AppSpacing.md),
 
-                    // Forgot Password
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: TextButton(
-                        onPressed: () {
-                          // TODO: Navigate to forgot password page
-                        },
-                        child: Text(
-                          'Şifremi Unuttum',
-                          style: AppTypography.bodyMedium.copyWith(
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.w600,
+                    // Confirm Password Field
+                    TextFormField(
+                      controller: _confirmPasswordController,
+                      obscureText: _obscureConfirmPassword,
+                      enabled: !isLoading,
+                      decoration: InputDecoration(
+                        hintText: 'Şifrenizi tekrar girin',
+                        prefixIcon: const Icon(Icons.lock_outline),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscureConfirmPassword
+                                ? Icons.visibility_outlined
+                                : Icons.visibility_off_outlined,
+                            color: AppColors.textHint,
                           ),
+                          onPressed: () {
+                            setState(() {
+                              _obscureConfirmPassword =
+                                  !_obscureConfirmPassword;
+                            });
+                          },
                         ),
                       ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Şifre tekrarı gerekli';
+                        }
+                        if (value != _passwordController.text) {
+                          return 'Şifreler eşleşmiyor';
+                        }
+                        return null;
+                      },
                     ),
 
-                    const SizedBox(height: AppSpacing.xl),
+                    const SizedBox(height: AppSpacing.xxl),
 
-                    // Login Button
+                    // Register Button
                     SizedBox(
                       width: double.infinity,
                       height: 56,
                       child: ElevatedButton(
-                        onPressed: state is AuthLoading
-                            ? null
-                            : _onLoginPressed,
+                        onPressed: isLoading ? null : _onRegisterPressed,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primary,
                           foregroundColor: Colors.white,
@@ -302,7 +330,7 @@ class _LoginViewState extends State<LoginView> {
                             borderRadius: BorderRadius.circular(AppRadius.full),
                           ),
                         ),
-                        child: state is AuthLoading
+                        child: isLoading
                             ? const SizedBox(
                                 width: 24,
                                 height: 24,
@@ -313,43 +341,31 @@ class _LoginViewState extends State<LoginView> {
                                   ),
                                 ),
                               )
-                            : Text(
-                                'Giriş Yap',
-                                style: AppTypography.button.copyWith(
-                                  color: Colors.white,
-                                ),
-                              ),
+                            : const Text('Kayıt Ol'),
                       ),
                     ),
 
                     const SizedBox(height: AppSpacing.xl),
 
-                    // Register Link
+                    // Login link
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          'Hesabınız yok mu? ',
+                          'Zaten hesabınız var mı? ',
                           style: AppTypography.bodyMedium.copyWith(
                             color: AppColors.textSecondary,
                           ),
                         ),
                         TextButton(
-                          onPressed: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    RegisterPage(userType: widget.userType),
-                              ),
-                            );
-                          },
+                          onPressed: () => Navigator.of(context).pop(),
                           style: TextButton.styleFrom(
                             padding: EdgeInsets.zero,
                             minimumSize: Size.zero,
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           ),
                           child: Text(
-                            'Kayıt Ol',
+                            'Giriş Yap',
                             style: AppTypography.bodyMedium.copyWith(
                               color: AppColors.primary,
                               fontWeight: FontWeight.w600,
@@ -358,6 +374,8 @@ class _LoginViewState extends State<LoginView> {
                         ),
                       ],
                     ),
+
+                    const SizedBox(height: AppSpacing.xl),
                   ],
                 ),
               ),

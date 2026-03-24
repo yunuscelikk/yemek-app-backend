@@ -30,11 +30,12 @@ class AuthUnauthenticated extends AuthState {
 
 class AuthRegistrationSuccess extends AuthState {
   final String message;
+  final String email;
 
-  const AuthRegistrationSuccess({required this.message});
+  const AuthRegistrationSuccess({required this.message, required this.email});
 
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [message, email];
 }
 
 class AuthError extends AuthState {

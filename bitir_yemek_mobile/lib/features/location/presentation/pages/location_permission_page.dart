@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import '../../../../config/theme.dart';
 import '../../../../core/services/location_service.dart';
+import '../../../business_owner/presentation/pages/business_owner_scaffold.dart';
 import '../../../main/presentation/pages/main_scaffold.dart';
 
 class LocationPermissionPage extends StatefulWidget {
-  const LocationPermissionPage({super.key});
+  final bool isBusinessOwner;
+
+  const LocationPermissionPage({super.key, this.isBusinessOwner = false});
 
   @override
   State<LocationPermissionPage> createState() => _LocationPermissionPageState();
@@ -48,15 +51,24 @@ class _LocationPermissionPageState extends State<LocationPermissionPage> {
       final position = await _locationService.getCurrentPosition();
 
       if (position != null && mounted) {
-        // Navigate to main scaffold with location
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (context) => MainScaffold(
-              latitude: position.latitude,
-              longitude: position.longitude,
+        if (widget.isBusinessOwner) {
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(
+              builder: (context) => const BusinessOwnerScaffold(),
             ),
-          ),
-        );
+            (route) => false,
+          );
+        } else {
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(
+              builder: (context) => MainScaffold(
+                latitude: position.latitude,
+                longitude: position.longitude,
+              ),
+            ),
+            (route) => false,
+          );
+        }
       } else {
         _showError('Konum alınamadı');
       }

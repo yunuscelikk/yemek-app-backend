@@ -8,6 +8,7 @@ abstract class AuthRepository {
     required String email,
     required String password,
     String? phone,
+    String role = 'customer',
   });
 
   Future<void> logout();
@@ -17,4 +18,6 @@ abstract class AuthRepository {
   Future<String?> getRefreshToken();
 
   Future<bool> isLoggedIn();
+
+  Future<String?> getSavedUserRole();
 }

@@ -44,10 +44,18 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       email: event.email,
       password: event.password,
       phone: event.phone,
+      role: event.role,
     );
 
     if (result.isSuccess) {
-      emit(AuthRegistrationSuccess(message: result.message!));
+      emit(
+        AuthRegistrationSuccess(
+          message:
+              result.message ??
+              'Kayıt başarılı! Lütfen e-postanızı doğrulayın.',
+          email: result.registeredEmail ?? event.email,
+        ),
+      );
     } else {
       emit(AuthError(message: result.error!));
     }

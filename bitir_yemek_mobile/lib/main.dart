@@ -4,6 +4,7 @@ import 'config/theme.dart';
 import 'core/services/location_service.dart';
 import 'core/storage/token_storage.dart';
 import 'features/auth/presentation/pages/welcome_page.dart';
+import 'features/business_owner/presentation/pages/business_owner_scaffold.dart';
 import 'features/location/presentation/pages/location_permission_page.dart';
 import 'features/main/presentation/pages/main_scaffold.dart';
 
@@ -46,12 +47,25 @@ class _SplashScreenState extends State<SplashScreen> {
     final accessToken = await tokenStorage.getAccessToken();
 
     if (accessToken != null && accessToken.isNotEmpty) {
-      // Token var, konum izni kontrol et
+      final role = await tokenStorage.getUserRole();
+      final isBusinessOwner = role == 'business_owner';
+
+      // Token exists — check location permission
       final locationService = LocationService();
       final hasPermission = await locationService.hasPermission();
 
       if (hasPermission) {
-        // Konum izni var, main scaffold'a git
+        if (isBusinessOwner) {
+          if (mounted) {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                builder: (context) => const BusinessOwnerScaffold(),
+              ),
+            );
+          }
+          return;
+        }
+
         final position = await locationService.getCurrentPosition();
         if (position != null && mounted) {
           Navigator.of(context).pushReplacement(
@@ -66,16 +80,17 @@ class _SplashScreenState extends State<SplashScreen> {
         }
       }
 
-      // Konum izni yok, location permission page'e git
+      // No location permission yet
       if (mounted) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
-            builder: (context) => const LocationPermissionPage(),
+            builder: (context) =>
+                LocationPermissionPage(isBusinessOwner: isBusinessOwner),
           ),
         );
       }
     } else {
-      // Token yok, welcome page'e git
+      // No token — show welcome page
       if (mounted) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => const WelcomePage()),

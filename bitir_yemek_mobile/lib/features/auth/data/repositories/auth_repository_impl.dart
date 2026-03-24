@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import '../../../../core/storage/token_storage.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/auth_remote_datasource.dart';
@@ -26,11 +28,13 @@ class AuthRepositoryImpl implements AuthRepository {
         return AuthResult.failure('Giriş bilgileri alınamadı');
       }
 
-      // Save tokens
+      // Save tokens and user data
       await _tokenStorage.saveAccessToken(accessToken);
       await _tokenStorage.saveRefreshToken(refreshToken);
 
       final user = UserModel.fromJson(userData);
+      await _tokenStorage.saveUserRole(user.role);
+      await _tokenStorage.saveUserData(jsonEncode(user.toJson()));
 
       return AuthResult.success(user: user);
     } on AuthException catch (e) {
@@ -46,6 +50,7 @@ class AuthRepositoryImpl implements AuthRepository {
     required String email,
     required String password,
     String? phone,
+    String role = 'customer',
   }) async {
     try {
       final response = await _remoteDataSource.register(
@@ -53,13 +58,14 @@ class AuthRepositoryImpl implements AuthRepository {
         email: email,
         password: password,
         phone: phone,
+        role: role,
       );
 
       final message =
           response['message'] as String? ??
           'Kayıt başarılı! Lütfen e-postanızı doğrulayın.';
 
-      return AuthResult.success(message: message);
+      return AuthResult.success(message: message, registeredEmail: email);
     } on AuthException catch (e) {
       return AuthResult.failure(e.message);
     } catch (e) {
@@ -88,6 +94,11 @@ class AuthRepositoryImpl implements AuthRepository {
     final token = await getAccessToken();
     return token != null;
   }
+
+  @override
+  Future<String?> getSavedUserRole() async {
+    return await _tokenStorage.getUserRole();
+  }
 }
 
 class AuthResult {
@@ -95,11 +106,27 @@ class AuthResult {
   final UserModel? user;
   final String? message;
   final String? error;
+  final String? registeredEmail;
 
-  AuthResult._({required this.isSuccess, this.user, this.message, this.error});
+  AuthResult._({
+    required this.isSuccess,
+    this.user,
+    this.message,
+    this.error,
+    this.registeredEmail,
+  });
 
-  factory AuthResult.success({UserModel? user, String? message}) {
-    return AuthResult._(isSuccess: true, user: user, message: message);
+  factory AuthResult.success({
+    UserModel? user,
+    String? message,
+    String? registeredEmail,
+  }) {
+    return AuthResult._(
+      isSuccess: true,
+      user: user,
+      message: message,
+      registeredEmail: registeredEmail,
+    );
   }
 
   factory AuthResult.failure(String error) {

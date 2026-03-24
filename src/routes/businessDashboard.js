@@ -3,7 +3,7 @@ const businessDashboardController = require('../controllers/businessDashboardCon
 const { authenticate } = require('../middlewares/auth');
 const { authorize } = require('../middlewares/role');
 const { validateQuery, validateParams, validate } = require('../middlewares/validate');
-const { paginationSchema, idParamSchema } = require('../validations/schemas');
+const { paginationSchema, businessIdParamSchema } = require('../validations/schemas');
 const { z } = require('zod');
 
 /**
@@ -55,7 +55,7 @@ router.get('/my-businesses', businessDashboardController.getMyBusinesses);
  *       404:
  *         description: İşletme bulunamadı
  */
-router.get('/:businessId/dashboard', validateParams(idParamSchema), businessDashboardController.getDashboardStats);
+router.get('/:businessId/dashboard', validateParams(businessIdParamSchema), businessDashboardController.getDashboardStats);
 
 /**
  * @swagger
@@ -91,7 +91,7 @@ router.get('/:businessId/dashboard', validateParams(idParamSchema), businessDash
  *       403:
  *         description: Yetkisiz işlem
  */
-router.get('/:businessId/orders', validateParams(idParamSchema), validateQuery(paginationSchema), businessDashboardController.getBusinessOrders);
+router.get('/:businessId/orders', validateParams(businessIdParamSchema), validateQuery(paginationSchema), businessDashboardController.getBusinessOrders);
 
 /**
  * @swagger
@@ -122,7 +122,7 @@ router.get('/:businessId/orders', validateParams(idParamSchema), validateQuery(p
  *       403:
  *         description: Yetkisiz işlem
  */
-router.get('/:businessId/packages', validateParams(idParamSchema), validateQuery(paginationSchema), businessDashboardController.getBusinessPackages);
+router.get('/:businessId/packages', validateParams(businessIdParamSchema), validateQuery(paginationSchema), businessDashboardController.getBusinessPackages);
 
 /**
  * @swagger
@@ -153,7 +153,7 @@ router.get('/:businessId/packages', validateParams(idParamSchema), validateQuery
  *       403:
  *         description: Yetkisiz işlem
  */
-router.get('/:businessId/reviews', validateParams(idParamSchema), validateQuery(paginationSchema), businessDashboardController.getBusinessReviews);
+router.get('/:businessId/reviews', validateParams(businessIdParamSchema), validateQuery(paginationSchema), businessDashboardController.getBusinessReviews);
 
 // QR Kod ile sipariş doğrulama
 const verifyOrderSchema = z.object({
@@ -195,6 +195,6 @@ const verifyOrderSchema = z.object({
  *       404:
  *         description: Sipariş bulunamadı
  */
-router.post('/:businessId/verify-order', validateParams(idParamSchema), validate(verifyOrderSchema), businessDashboardController.verifyOrderByPickupCode);
+router.post('/:businessId/verify-order', validateParams(businessIdParamSchema), validate(verifyOrderSchema), businessDashboardController.verifyOrderByPickupCode);
 
 module.exports = router;

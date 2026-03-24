@@ -2,7 +2,7 @@ const router = require('express').Router();
 const reviewController = require('../controllers/reviewController');
 const { authenticate } = require('../middlewares/auth');
 const { validate, validateQuery, validateParams } = require('../middlewares/validate');
-const { reviewSchema, paginationSchema, idParamSchema } = require('../validations/schemas');
+const { reviewSchema, paginationSchema, idParamSchema, businessIdParamSchema } = require('../validations/schemas');
 
 /**
  * @swagger
@@ -73,6 +73,6 @@ router.post('/', authenticate, validate(reviewSchema), reviewController.create);
  *       200:
  *         description: Değerlendirme listesi
  */
-router.get('/business/:businessId', validateParams(idParamSchema), validateQuery(paginationSchema), reviewController.getByBusiness);
+router.get('/business/:businessId', validateParams(businessIdParamSchema), validateQuery(paginationSchema), reviewController.getByBusiness);
 
 module.exports = router;
