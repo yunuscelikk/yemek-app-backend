@@ -16,6 +16,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<RegisterRequested>(_onRegisterRequested);
     on<LogoutRequested>(_onLogoutRequested);
     on<CheckAuthStatus>(_onCheckAuthStatus);
+    on<GoogleSignInRequested>(_onGoogleSignInRequested);
+    on<ForgotPasswordRequested>(_onForgotPasswordRequested);
+    on<ResetPasswordRequested>(_onResetPasswordRequested);
   }
 
   Future<void> _onLoginRequested(
@@ -88,6 +91,62 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       }
     } else {
       emit(AuthUnauthenticated());
+    }
+  }
+
+  Future<void> _onGoogleSignInRequested(
+    GoogleSignInRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(AuthLoading());
+
+    final result = await _authRepository.googleLogin(role: event.role);
+
+    if (result.isSuccess) {
+      emit(AuthAuthenticated(user: result.user!));
+    } else {
+      emit(AuthError(message: result.error!));
+    }
+  }
+
+  Future<void> _onForgotPasswordRequested(
+    ForgotPasswordRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(AuthLoading());
+
+    final result = await _authRepository.forgotPassword(event.email);
+
+    if (result.isSuccess) {
+      emit(
+        ForgotPasswordSuccess(
+          message: result.message ?? 'Şifre sıfırlama kodu gönderildi',
+        ),
+      );
+    } else {
+      emit(AuthError(message: result.error!));
+    }
+  }
+
+  Future<void> _onResetPasswordRequested(
+    ResetPasswordRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(AuthLoading());
+
+    final result = await _authRepository.resetPassword(
+      event.token,
+      event.newPassword,
+    );
+
+    if (result.isSuccess) {
+      emit(
+        ResetPasswordSuccess(
+          message: result.message ?? 'Şifreniz başarıyla değiştirildi',
+        ),
+      );
+    } else {
+      emit(AuthError(message: result.error!));
     }
   }
 }

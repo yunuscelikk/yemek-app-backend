@@ -61,6 +61,51 @@ class AuthRemoteDataSource {
     _dioClient.clearAuthToken();
   }
 
+  Future<Map<String, dynamic>> googleLogin({
+    required String idToken,
+    String role = 'customer',
+  }) async {
+    try {
+      final response = await _dioClient.dio.post(
+        '/auth/google',
+        data: {'idToken': idToken, 'role': role},
+      );
+
+      return response.data as Map<String, dynamic>;
+    } on DioException catch (e) {
+      throw _handleDioError(e);
+    }
+  }
+
+  Future<Map<String, dynamic>> forgotPassword(String email) async {
+    try {
+      final response = await _dioClient.dio.post(
+        '/auth/forgot-password',
+        data: {'email': email},
+      );
+
+      return response.data as Map<String, dynamic>;
+    } on DioException catch (e) {
+      throw _handleDioError(e);
+    }
+  }
+
+  Future<Map<String, dynamic>> resetPassword({
+    required String token,
+    required String password,
+  }) async {
+    try {
+      final response = await _dioClient.dio.post(
+        '/auth/reset-password',
+        data: {'token': token, 'password': password},
+      );
+
+      return response.data as Map<String, dynamic>;
+    } on DioException catch (e) {
+      throw _handleDioError(e);
+    }
+  }
+
   Exception _handleDioError(DioException e) {
     if (e.type == DioExceptionType.connectionTimeout ||
         e.type == DioExceptionType.receiveTimeout ||

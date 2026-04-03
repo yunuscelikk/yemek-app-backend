@@ -20,7 +20,7 @@ const User = sequelize.define('User', {
   },
   password: {
     type: DataTypes.STRING,
-    allowNull: false,
+    allowNull: true,
   },
   phone: {
     type: DataTypes.STRING,
@@ -54,6 +54,11 @@ const User = sequelize.define('User', {
     type: DataTypes.DATE,
     allowNull: true,
   },
+  googleId: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    unique: true,
+  },
 }, {
   timestamps: true,
   paranoid: true,
@@ -78,6 +83,7 @@ User.prototype.comparePassword = async function (candidatePassword) {
 User.prototype.toJSON = function () {
   const values = { ...this.get() };
   delete values.password;
+  delete values.googleId;
   delete values.emailVerificationToken;
   delete values.passwordResetToken;
   delete values.passwordResetExpires;

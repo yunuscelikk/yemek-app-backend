@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:google_sign_in/google_sign_in.dart';
+
 import '../../../../core/storage/token_storage.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/auth_remote_datasource.dart';
@@ -80,6 +82,58 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<AuthResult> googleLogin({required String role}) async {
+    try {
+      const clientId =
+          '903437063740-k6sd7h1j9ou3rc27rjrfp9q0h58efeqh.apps.googleusercontent.com';
+
+      final googleSignIn = GoogleSignIn(
+        clientId: clientId,
+        serverClientId: clientId,
+        scopes: ['email', 'profile'],
+      );
+
+      final googleUser = await googleSignIn.signIn();
+      if (googleUser == null) {
+        return AuthResult.failure('Google ile giriş iptal edildi');
+      }
+
+      final googleAuth = await googleUser.authentication;
+      final idToken = googleAuth.idToken;
+
+      if (idToken == null) {
+        return AuthResult.failure('Google kimlik doğrulama başarısız');
+      }
+
+      final response = await _remoteDataSource.googleLogin(
+        idToken: idToken,
+        role: role,
+      );
+
+      final accessToken = response['accessToken'] as String?;
+      final refreshToken = response['refreshToken'] as String?;
+      final userData = response['user'] as Map<String, dynamic>?;
+
+      if (accessToken == null || refreshToken == null || userData == null) {
+        return AuthResult.failure('Giriş bilgileri alınamadı');
+      }
+
+      await _tokenStorage.saveAccessToken(accessToken);
+      await _tokenStorage.saveRefreshToken(refreshToken);
+
+      final user = UserModel.fromJson(userData);
+      await _tokenStorage.saveUserRole(user.role);
+      await _tokenStorage.saveUserData(jsonEncode(user.toJson()));
+
+      return AuthResult.success(user: user);
+    } on AuthException catch (e) {
+      return AuthResult.failure(e.message);
+    } catch (e) {
+      return AuthResult.failure('Google ile giriş başarısız: $e');
+    }
+  }
+
+  @override
   Future<String?> getAccessToken() async {
     return await _tokenStorage.getAccessToken();
   }
@@ -110,6 +164,37 @@ class AuthRepositoryImpl implements AuthRepository {
       return null;
     } catch (e) {
       return null;
+    }
+  }
+
+  @override
+  Future<AuthResult> forgotPassword(String email) async {
+    try {
+      final response = await _remoteDataSource.forgotPassword(email);
+      final message =
+          response['message'] as String? ?? 'Şifre sıfırlama kodu gönderildi';
+      return AuthResult.success(message: message);
+    } on AuthException catch (e) {
+      return AuthResult.failure(e.message);
+    } catch (e) {
+      return AuthResult.failure('Bir hata oluştu: $e');
+    }
+  }
+
+  @override
+  Future<AuthResult> resetPassword(String token, String newPassword) async {
+    try {
+      final response = await _remoteDataSource.resetPassword(
+        token: token,
+        password: newPassword,
+      );
+      final message =
+          response['message'] as String? ?? 'Şifreniz başarıyla değiştirildi';
+      return AuthResult.success(message: message);
+    } on AuthException catch (e) {
+      return AuthResult.failure(e.message);
+    } catch (e) {
+      return AuthResult.failure('Bir hata oluştu: $e');
     }
   }
 }

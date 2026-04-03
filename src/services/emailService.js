@@ -1,47 +1,59 @@
-const nodemailer = require('nodemailer');
+const sgMail = require('@sendgrid/mail');
 const logger = require('./logger');
 
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || 'smtp.gmail.com',
-  port: parseInt(process.env.SMTP_PORT) || 587,
-  secure: false,
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-});
+// Configure SendGrid
+if (process.env.SENDGRID_API_KEY) {
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+}
 
 const sendMail = async (to, subject, html) => {
-  if (!process.env.SMTP_USER) {
-    logger.info(`[Email] SMTP yapılandırılmamış. Konu: ${subject}, Alıcı: ${to}`);
+  if (!process.env.SENDGRID_API_KEY) {
+    logger.info(`[Email] SendGrid yapılandırılmamış. Konu: ${subject}, Alıcı: ${to}`);
     return;
   }
 
-  await transporter.sendMail({
-    from: process.env.SMTP_FROM || process.env.SMTP_USER,
+  const msg = {
     to,
+    from: process.env.SENDGRID_FROM || 'noreply@bitiryemek.com',
     subject,
     html,
-  });
+  };
+
+  try {
+    await sgMail.send(msg);
+    logger.info(`[Email] Gönderildi. Konu: ${subject}, Alıcı: ${to}`);
+  } catch (error) {
+    logger.error(`[Email] Gönderilemedi. Konu: ${subject}, Alıcı: ${to}, Hata: ${error.message}`);
+    if (error.response) {
+      logger.error(`[Email] SendGrid yanıtı: ${JSON.stringify(error.response.body)}`);
+    }
+    // Provide a user-friendly error message
+    const friendlyError = new Error('E-posta gönderilemedi. Lütfen daha sonra tekrar deneyin.');
+    friendlyError.statusCode = 502;
+    throw friendlyError;
+  }
 };
 
 const sendVerificationEmail = async (email, token) => {
   const url = `${process.env.APP_URL || 'http://localhost:3000'}/api/auth/verify-email?token=${token}`;
   await sendMail(email, 'Bitir Yemek - E-posta Doğrulama', `
-    <h2>E-posta Doğrulama</h2>
-    <p>Hesabınızı doğrulamak için aşağıdaki bağlantıya tıklayın:</p>
-    <a href="${url}">${url}</a>
-    <p>Bu bağlantı 24 saat geçerlidir.</p>
+    <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 24px;">
+      <h2 style="color: #FF7043;">E-posta Doğrulama</h2>
+      <p>Hesabınızı doğrulamak için aşağıdaki bağlantıya tıklayın:</p>
+      <a href="${url}" style="display: inline-block; padding: 12px 24px; background: #FF7043; color: #fff; text-decoration: none; border-radius: 8px;">Hesabımı Doğrula</a>
+      <p style="color: #999; font-size: 12px; margin-top: 24px;">Bu bağlantı 24 saat geçerlidir.</p>
+    </div>
   `);
 };
 
 const sendPasswordResetEmail = async (email, token) => {
-  const url = `${process.env.APP_URL || 'http://localhost:3000'}/api/auth/reset-password?token=${token}`;
   await sendMail(email, 'Bitir Yemek - Şifre Sıfırlama', `
-    <h2>Şifre Sıfırlama</h2>
-    <p>Şifrenizi sıfırlamak için aşağıdaki bağlantıya tıklayın:</p>
-    <a href="${url}">${url}</a>
-    <p>Bu bağlantı 1 saat geçerlidir.</p>
+    <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 24px;">
+      <h2 style="color: #FF7043;">Şifre Sıfırlama</h2>
+      <p>Şifrenizi sıfırlamak için aşağıdaki kodu uygulamaya girin:</p>
+      <h1 style="letter-spacing: 8px; text-align: center; font-size: 36px; padding: 16px; background: #f5f5f5; border-radius: 8px; color: #333;">${token}</h1>
+      <p style="color: #999; font-size: 12px; margin-top: 24px;">Bu kod 1 saat geçerlidir. Eğer bu işlemi siz yapmadıysanız bu e-postayı dikkate almayın.</p>
+    </div>
   `);
 };
 
@@ -52,9 +64,11 @@ const sendOrderStatusEmail = async (email, orderStatus, pickupCode) => {
     cancelled: 'iptal edildi',
   };
   await sendMail(email, `Bitir Yemek - Sipariş ${statusMap[orderStatus] || orderStatus}`, `
-    <h2>Sipariş Durumu Güncellendi</h2>
-    <p>Siparişiniz <strong>${statusMap[orderStatus] || orderStatus}</strong>.</p>
-    ${pickupCode ? `<p>Teslim alma kodunuz: <strong>${pickupCode}</strong></p>` : ''}
+    <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 24px;">
+      <h2 style="color: #FF7043;">Sipariş Durumu Güncellendi</h2>
+      <p>Siparişiniz <strong>${statusMap[orderStatus] || orderStatus}</strong>.</p>
+      ${pickupCode ? `<p>Teslim alma kodunuz: <strong style="font-size: 20px; letter-spacing: 4px;">${pickupCode}</strong></p>` : ''}
+    </div>
   `);
 };
 

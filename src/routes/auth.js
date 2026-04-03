@@ -123,4 +123,7 @@ router.post('/resend-verification', authController.resendVerification);
 router.post('/forgot-password', validate(forgotPasswordSchema), authController.forgotPassword);
 router.post('/reset-password', validate(resetPasswordSchema), authController.resetPassword);
 
+// Google Sign-In
+router.post('/google', authController.googleLogin);
+
 module.exports = router;

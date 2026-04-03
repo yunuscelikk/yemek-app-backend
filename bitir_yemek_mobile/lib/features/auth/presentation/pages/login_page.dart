@@ -13,6 +13,7 @@ import '../../data/repositories/auth_repository_impl.dart';
 import '../../domain/user_type.dart';
 import '../bloc/auth_bloc.dart';
 import 'register_page.dart';
+import 'forgot_password_page.dart';
 
 class LoginPage extends StatelessWidget {
   final UserType userType;
@@ -272,7 +273,11 @@ class _LoginViewState extends State<LoginView> {
                       alignment: Alignment.centerRight,
                       child: TextButton(
                         onPressed: () {
-                          // TODO: Navigate to forgot password page
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => const ForgotPasswordPage(),
+                            ),
+                          );
                         },
                         child: Text(
                           'Şifremi Unuttum',
@@ -321,6 +326,67 @@ class _LoginViewState extends State<LoginView> {
                               ),
                       ),
                     ),
+
+                    const SizedBox(height: AppSpacing.xl),
+
+                    // Divider & Google Sign-In (only for customers)
+                    if (widget.userType != UserType.businessOwner) ...[
+                      Row(
+                        children: [
+                          const Expanded(
+                            child: Divider(color: AppColors.textHint),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.md,
+                            ),
+                            child: Text(
+                              'veya',
+                              style: AppTypography.bodySmall.copyWith(
+                                color: AppColors.textHint,
+                              ),
+                            ),
+                          ),
+                          const Expanded(
+                            child: Divider(color: AppColors.textHint),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: AppSpacing.xl),
+
+                      // Google Sign-In Button
+                      SizedBox(
+                        width: double.infinity,
+                        height: 56,
+                        child: OutlinedButton.icon(
+                          onPressed: state is AuthLoading
+                              ? null
+                              : () {
+                                  context.read<AuthBloc>().add(
+                                    GoogleSignInRequested(
+                                      role: widget.userType.role,
+                                    ),
+                                  );
+                                },
+                          icon: const Icon(Icons.g_mobiledata, size: 28),
+                          label: Text(
+                            'Google ile Giriş Yap',
+                            style: AppTypography.button.copyWith(
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(color: AppColors.textHint),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                AppRadius.full,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
 
                     const SizedBox(height: AppSpacing.xl),
 

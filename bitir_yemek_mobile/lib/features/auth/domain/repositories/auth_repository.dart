@@ -14,6 +14,8 @@ abstract class AuthRepository {
 
   Future<void> logout();
 
+  Future<AuthResult> googleLogin({required String role});
+
   Future<String?> getAccessToken();
 
   Future<String?> getRefreshToken();
@@ -23,4 +25,8 @@ abstract class AuthRepository {
   Future<String?> getSavedUserRole();
 
   Future<UserModel?> getCurrentUser();
+
+  Future<AuthResult> forgotPassword(String email);
+
+  Future<AuthResult> resetPassword(String token, String newPassword);
 }

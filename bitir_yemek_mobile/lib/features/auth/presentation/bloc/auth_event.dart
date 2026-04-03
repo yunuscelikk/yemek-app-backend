@@ -43,3 +43,34 @@ class LogoutRequested extends AuthEvent {
 class CheckAuthStatus extends AuthEvent {
   const CheckAuthStatus();
 }
+
+class GoogleSignInRequested extends AuthEvent {
+  final String role;
+
+  const GoogleSignInRequested({this.role = 'customer'});
+
+  @override
+  List<Object?> get props => [role];
+}
+
+class ForgotPasswordRequested extends AuthEvent {
+  final String email;
+
+  const ForgotPasswordRequested({required this.email});
+
+  @override
+  List<Object?> get props => [email];
+}
+
+class ResetPasswordRequested extends AuthEvent {
+  final String token;
+  final String newPassword;
+
+  const ResetPasswordRequested({
+    required this.token,
+    required this.newPassword,
+  });
+
+  @override
+  List<Object?> get props => [token, newPassword];
+}

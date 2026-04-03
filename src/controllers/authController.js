@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const { Op } = require('sequelize');
+const { OAuth2Client } = require('google-auth-library');
 const { User } = require('../models');
 const { generateToken } = require('../utils/helpers');
 const { sendVerificationEmail, sendPasswordResetEmail } = require('../services/emailService');
@@ -168,7 +169,7 @@ exports.forgotPassword = async (req, res, next) => {
       return res.status(404).json({ message: 'Bu e-posta adresiyle kayıtlı kullanıcı bulunamadı' });
     }
 
-    const resetToken = generateToken();
+    const resetToken = Math.floor(100000 + Math.random() * 900000).toString();
     const resetExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
 
     await user.update({ 
@@ -178,7 +179,7 @@ exports.forgotPassword = async (req, res, next) => {
 
     await sendPasswordResetEmail(email, resetToken);
 
-    res.json({ message: 'Şifre sıfırlama bağlantısı e-posta adresinize gönderildi' });
+    res.json({ message: 'Şifre sıfırlama kodu e-posta adresinize gönderildi' });
   } catch (error) {
     next(error);
   }
@@ -211,6 +212,73 @@ exports.resetPassword = async (req, res, next) => {
     });
 
     res.json({ message: 'Şifreniz başarıyla değiştirildi' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Google Sign-In
+exports.googleLogin = async (req, res, next) => {
+  try {
+    const { idToken, role } = req.body;
+
+    if (!idToken) {
+      return res.status(400).json({ message: 'Google ID token gerekli' });
+    }
+
+    // Verify the Google ID token
+    const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+    let ticket;
+    try {
+      ticket = await client.verifyIdToken({
+        idToken,
+        audience: process.env.GOOGLE_CLIENT_ID,
+      });
+    } catch (err) {
+      logger.warn('Invalid Google ID token', { error: err.message });
+      return res.status(401).json({ message: 'Geçersiz Google token' });
+    }
+
+    const payload = ticket.getPayload();
+    const { sub: googleId, email, name, email_verified } = payload;
+
+    if (!email) {
+      return res.status(400).json({ message: 'Google hesabında e-posta bulunamadı' });
+    }
+
+    // Find existing user by googleId or email
+    let user = await User.findOne({ where: { googleId } });
+
+    if (!user) {
+      user = await User.findOne({ where: { email } });
+
+      if (user) {
+        // Link Google account to existing user
+        await user.update({ googleId, isEmailVerified: true });
+        logger.info('Google account linked to existing user', { userId: user.id, email });
+      } else {
+        // Create new user
+        const userRole = role === 'business_owner' ? 'business_owner' : 'customer';
+        user = await User.create({
+          name: name || email.split('@')[0],
+          email,
+          googleId,
+          role: userRole,
+          isEmailVerified: true,
+        });
+        logger.info('New user registered via Google', { userId: user.id, email, role: userRole });
+      }
+    }
+
+    const tokens = generateTokens(user);
+
+    logger.info('Google login successful', { userId: user.id, email });
+
+    res.json({
+      message: 'Google ile giriş başarılı',
+      user,
+      ...tokens,
+    });
   } catch (error) {
     next(error);
   }
