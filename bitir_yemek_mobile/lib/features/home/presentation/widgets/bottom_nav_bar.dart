@@ -30,9 +30,10 @@ class BottomNavBar extends StatelessWidget {
             children: [
               _buildNavItem(Icons.explore_outlined, 'Keşfet', 0, context),
               _buildNavItem(Icons.search, 'Ara', 1, context),
-              _buildNavItem(Icons.inventory_2_outlined, 'Sipariş', 2, context),
-              _buildNavItem(Icons.favorite_outline, 'Favoriler', 3, context),
-              _buildNavItem(Icons.person_outline, 'Profil', 4, context),
+              _buildNavItem(Icons.map_outlined, 'Harita', 2, context),
+              _buildNavItem(Icons.inventory_2_outlined, 'Sipariş', 3, context),
+              _buildNavItem(Icons.favorite_outline, 'Favoriler', 4, context),
+              _buildNavItem(Icons.person_outline, 'Profil', 5, context),
             ],
           ),
         ),
@@ -105,14 +106,18 @@ class BottomNavBar extends StatelessWidget {
         }
         break;
       case 2:
+        // Harita - Map
+        // TODO: Navigate to map page
+        break;
+      case 3:
         // Sipariş - Orders
         // TODO: Navigate to orders page
         break;
-      case 3:
+      case 4:
         // Favoriler - Favorites
         // TODO: Navigate to favorites page
         break;
-      case 4:
+      case 5:
         // Profil - Profile
         // TODO: Navigate to profile page
         break;

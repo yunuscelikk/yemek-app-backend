@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import '../../config/constants.dart';
 import '../../core/storage/token_storage.dart';
 
@@ -28,9 +29,12 @@ class DioClient {
       );
     }
 
-    _dio.interceptors.add(
-      LogInterceptor(requestBody: true, responseBody: true, error: true),
-    );
+    // Only add verbose logging in debug mode
+    if (!kReleaseMode) {
+      _dio.interceptors.add(
+        LogInterceptor(requestBody: true, responseBody: true, error: true),
+      );
+    }
   }
 
   Dio get dio => _dio;
@@ -52,6 +56,12 @@ class AuthInterceptor extends Interceptor {
   final TokenStorage tokenStorage;
   final Dio dio;
   bool _isRefreshing = false;
+  int _refreshAttempts = 0;
+  static const int _maxRefreshAttempts = 2;
+
+  // Queue for pending requests while token is being refreshed
+  final List<({ErrorInterceptorHandler handler, RequestOptions options})>
+  _pendingRequests = [];
 
   AuthInterceptor({required this.tokenStorage, required this.dio});
 
@@ -69,12 +79,30 @@ class AuthInterceptor extends Interceptor {
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) async {
-    if (err.response?.statusCode == 401 && !_isRefreshing) {
+    if (err.response?.statusCode == 401) {
+      // Check if we've exceeded max refresh attempts
+      if (_refreshAttempts >= _maxRefreshAttempts) {
+        await tokenStorage.clearTokens();
+        _refreshAttempts = 0;
+        handler.next(err);
+        return;
+      }
+
+      // If already refreshing, queue this request and return
+      if (_isRefreshing) {
+        _pendingRequests.add((handler: handler, options: err.requestOptions));
+        return;
+      }
+
       _isRefreshing = true;
+      _refreshAttempts++;
+
       try {
         final refreshToken = await tokenStorage.getRefreshToken();
         if (refreshToken == null || refreshToken.isEmpty) {
           await tokenStorage.clearTokens();
+          _refreshAttempts = 0;
+          _rejectAllPending(err);
           handler.next(err);
           return;
         }
@@ -84,6 +112,8 @@ class AuthInterceptor extends Interceptor {
           BaseOptions(
             baseUrl: AppConstants.baseUrl,
             headers: {'Content-Type': 'application/json'},
+            connectTimeout: const Duration(seconds: 10),
+            receiveTimeout: const Duration(seconds: 10),
           ),
         );
 
@@ -98,18 +128,55 @@ class AuthInterceptor extends Interceptor {
         await tokenStorage.saveAccessToken(newAccessToken);
         await tokenStorage.saveRefreshToken(newRefreshToken);
 
+        // Reset refresh attempts on success
+        _refreshAttempts = 0;
+
         // Retry original request with the new token
         err.requestOptions.headers['Authorization'] = 'Bearer $newAccessToken';
         final retryResponse = await dio.fetch(err.requestOptions);
+
+        // Retry all pending requests with the new token
+        await _retryAllPending(newAccessToken);
+
         handler.resolve(retryResponse);
-      } catch (_) {
+      } catch (e) {
         await tokenStorage.clearTokens();
+        _refreshAttempts = 0;
+        _rejectAllPending(err);
         handler.next(err);
       } finally {
         _isRefreshing = false;
       }
     } else {
       handler.next(err);
+    }
+  }
+
+  /// Retry all pending requests with the new token
+  Future<void> _retryAllPending(String newToken) async {
+    final pendingRequests = List.of(_pendingRequests);
+    _pendingRequests.clear();
+
+    for (final pending in pendingRequests) {
+      try {
+        pending.options.headers['Authorization'] = 'Bearer $newToken';
+        final response = await dio.fetch(pending.options);
+        pending.handler.resolve(response);
+      } catch (e) {
+        pending.handler.next(
+          DioException(requestOptions: pending.options, error: e),
+        );
+      }
+    }
+  }
+
+  /// Reject all pending requests with an error
+  void _rejectAllPending(DioException error) {
+    final pendingRequests = List.of(_pendingRequests);
+    _pendingRequests.clear();
+
+    for (final pending in pendingRequests) {
+      pending.handler.next(error);
     }
   }
 }

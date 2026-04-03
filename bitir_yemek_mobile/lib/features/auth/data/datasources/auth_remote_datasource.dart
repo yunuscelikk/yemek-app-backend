@@ -62,7 +62,18 @@ class AuthRemoteDataSource {
   }
 
   Exception _handleDioError(DioException e) {
-    if (e.response != null) {
+    if (e.type == DioExceptionType.connectionTimeout ||
+        e.type == DioExceptionType.receiveTimeout ||
+        e.type == DioExceptionType.sendTimeout) {
+      return AuthException(
+        message: 'Bağlantı zaman aşımına uğradı. Lütfen tekrar deneyin.',
+      );
+    } else if (e.type == DioExceptionType.connectionError) {
+      return AuthException(
+        message:
+            'İnternet bağlantısı bulunamadı. Lütfen bağlantınızı kontrol edin.',
+      );
+    } else if (e.response != null) {
       final data = e.response?.data as Map<String, dynamic>?;
       final message = data?['message'] as String? ?? 'Bir hata oluştu';
       final errors = data?['errors'] as List<dynamic>?;

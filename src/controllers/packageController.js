@@ -1,11 +1,19 @@
 const { SurprisePackage, Business, Category, Order } = require('../models');
 const { Op } = require('sequelize');
 const { paginate, paginatedResponse, haversineDistance } = require('../utils/helpers');
+const cacheService = require('../services/cacheService');
 
 exports.getAll = async (req, res, next) => {
   try {
     const { city, district, categoryId, maxPrice, lat, lng, radius, excludeExpired } = req.query;
     const { page, limit, offset } = paginate(req.query);
+
+    // Check cache first
+    const cacheKey = `packages:list:${JSON.stringify(req.query)}`;
+    const cached = await cacheService.get(cacheKey);
+    if (cached) {
+      return res.json(cached);
+    }
 
     const businessWhere = { isActive: true };
     if (city) businessWhere.city = city;
@@ -62,7 +70,9 @@ exports.getAll = async (req, res, next) => {
       resultPackages.sort((a, b) => a.business.getDataValue('distance') - b.business.getDataValue('distance'));
     }
 
-    res.json(paginatedResponse(resultPackages, count, page, limit));
+    const responseData = paginatedResponse(resultPackages, count, page, limit);
+    await cacheService.set(cacheKey, responseData, 300); // 5 min TTL
+    res.json(responseData);
   } catch (error) {
     next(error);
   }
@@ -117,6 +127,8 @@ exports.create = async (req, res, next) => {
       imageUrl,
     });
 
+    await cacheService.delPattern('packages:list:*');
+
     res.status(201).json({
       message: 'Paket oluşturuldu',
       package: pkg,
@@ -159,6 +171,8 @@ exports.update = async (req, res, next) => {
       pickupDate, imageUrl, isActive,
     });
 
+    await cacheService.delPattern('packages:list:*');
+
     res.json({
       message: 'Paket güncellendi',
       package: pkg,
@@ -195,6 +209,8 @@ exports.remove = async (req, res, next) => {
     }
 
     await pkg.destroy();
+
+    await cacheService.delPattern('packages:list:*');
 
     res.json({ message: 'Paket silindi' });
   } catch (error) {

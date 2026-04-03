@@ -79,9 +79,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     final isLoggedIn = await _authRepository.isLoggedIn();
 
     if (isLoggedIn) {
-      // User has token, consider them authenticated
-      // You might want to fetch user profile here
-      emit(AuthUnauthenticated());
+      // User has token, load user data from storage
+      final userData = await _authRepository.getCurrentUser();
+      if (userData != null) {
+        emit(AuthAuthenticated(user: userData));
+      } else {
+        emit(AuthUnauthenticated());
+      }
     } else {
       emit(AuthUnauthenticated());
     }

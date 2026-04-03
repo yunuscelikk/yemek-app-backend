@@ -3,6 +3,7 @@ const { Op } = require('sequelize');
 const { User } = require('../models');
 const { generateToken } = require('../utils/helpers');
 const { sendVerificationEmail, sendPasswordResetEmail } = require('../services/emailService');
+const logger = require('../services/logger');
 
 const generateTokens = (user) => {
   const accessToken = jwt.sign(
@@ -31,6 +32,8 @@ exports.register = async (req, res, next) => {
 
     const user = await User.create({ name, email, password, phone, role });
     
+    logger.info('New user registered', { userId: user.id, email, role });
+    
     // Send verification email
     const verificationToken = generateToken();
     await user.update({ emailVerificationToken: verificationToken });
@@ -54,11 +57,13 @@ exports.login = async (req, res, next) => {
 
     const user = await User.findOne({ where: { email } });
     if (!user) {
+      logger.warn('Failed login attempt', { email });
       return res.status(401).json({ message: 'E-posta veya şifre hatalı' });
     }
 
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
+      logger.warn('Failed login attempt', { email });
       return res.status(401).json({ message: 'E-posta veya şifre hatalı' });
     }
 
@@ -67,6 +72,8 @@ exports.login = async (req, res, next) => {
     }
 
     const tokens = generateTokens(user);
+
+    logger.info('User login successful', { userId: user.id, email });
 
     res.json({
       message: 'Giriş başarılı',

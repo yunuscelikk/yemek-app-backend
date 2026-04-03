@@ -1,6 +1,10 @@
 class AppConstants {
-  // API Configuration
-  static const String baseUrl = 'http://localhost:3000/api';
+  // API Configuration - Environment-aware
+  // Use --dart-define=API_BASE_URL=https://api.bitiryemek.com/api for production builds
+  static const String baseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: 'http://localhost:3000/api',
+  );
   static const String apiVersion = 'v1';
 
   // Storage Keys
@@ -15,4 +19,9 @@ class AppConstants {
   // Timeouts
   static const int connectTimeout = 30000; // 30 seconds
   static const int receiveTimeout = 30000; // 30 seconds
+
+  // Mapbox - pass via: --dart-define=MAPBOX_ACCESS_TOKEN=pk.xxx
+  static const String mapboxAccessToken = String.fromEnvironment(
+    'MAPBOX_ACCESS_TOKEN',
+  );
 }

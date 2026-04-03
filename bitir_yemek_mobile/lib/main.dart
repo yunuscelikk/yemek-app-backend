@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
+import 'config/constants.dart';
 import 'config/theme.dart';
 import 'core/services/location_service.dart';
 import 'core/storage/token_storage.dart';
@@ -11,6 +13,10 @@ import 'features/main/presentation/pages/main_scaffold.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('tr_TR');
+
+  // Initialize Mapbox SDK with access token
+  MapboxOptions.setAccessToken(AppConstants.mapboxAccessToken);
+
   runApp(const MainApp());
 }
 
@@ -43,7 +49,7 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _checkAuth() async {
-    final tokenStorage = SharedPrefsTokenStorage();
+    final tokenStorage = createDefaultTokenStorage();
     final accessToken = await tokenStorage.getAccessToken();
 
     if (accessToken != null && accessToken.isNotEmpty) {

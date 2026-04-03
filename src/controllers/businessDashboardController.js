@@ -1,4 +1,4 @@
-const { Business, SurprisePackage, Order, User, Review, Category, Notification } = require('../models');
+const { Business, SurprisePackage, Order, User, Review, Category, Notification, sequelize } = require('../models');
 const { Op, Sequelize } = require('sequelize');
 const { paginate, paginatedResponse } = require('../utils/helpers');
 const { sendNotification } = require('../services/notificationService');
@@ -156,35 +156,37 @@ exports.getDashboardStats = async (req, res, next) => {
       last7Days.push(date);
     }
 
-    const dailyStats = await Promise.all(
-      last7Days.map(async (date) => {
-        const nextDate = new Date(date);
-        nextDate.setDate(nextDate.getDate() + 1);
+    const startDate = last7Days[0];
+    const endDate = new Date(today);
+    endDate.setDate(endDate.getDate() + 1);
 
-        const [orderCount, revenue] = await Promise.all([
-          Order.count({
-            where: {
-              packageId: { [Op.in]: packageIds },
-              createdAt: { [Op.gte]: date, [Op.lt]: nextDate },
-              status: { [Op.ne]: 'cancelled' },
-            },
-          }),
-          Order.sum('totalPrice', {
-            where: {
-              packageId: { [Op.in]: packageIds },
-              createdAt: { [Op.gte]: date, [Op.lt]: nextDate },
-              status: { [Op.ne]: 'cancelled' },
-            },
-          }),
-        ]);
+    // Single aggregated query to get daily stats (fixes N+1)
+    const dailyStatsRaw = await Order.findAll({
+      where: {
+        packageId: { [Op.in]: packageIds },
+        createdAt: { [Op.gte]: startDate, [Op.lt]: endDate },
+        status: { [Op.ne]: 'cancelled' },
+      },
+      attributes: [
+        [sequelize.fn('DATE', sequelize.col('Order.createdAt')), 'date'],
+        [sequelize.fn('COUNT', sequelize.col('Order.id')), 'orderCount'],
+        [sequelize.fn('COALESCE', sequelize.fn('SUM', sequelize.col('totalPrice')), 0), 'revenue'],
+      ],
+      group: [sequelize.fn('DATE', sequelize.col('Order.createdAt'))],
+      raw: true,
+    });
 
-        return {
-          date: date.toISOString().split('T')[0],
-          orders: orderCount,
-          revenue: revenue || 0,
-        };
-      })
-    );
+    // Map results to fill in zeros for days with no orders
+    const statsMap = new Map(dailyStatsRaw.map(s => [s.date, s]));
+    const dailyStats = last7Days.map(date => {
+      const dateStr = date.toISOString().split('T')[0];
+      const stat = statsMap.get(dateStr);
+      return {
+        date: dateStr,
+        orders: stat ? parseInt(stat.orderCount) : 0,
+        revenue: stat ? parseFloat(stat.revenue) : 0,
+      };
+    });
 
     res.json({
       stats: {
@@ -409,7 +411,9 @@ exports.verifyOrderByPickupCode = async (req, res, next) => {
 // İşletme sahibinin işletmelerini listele
 exports.getMyBusinesses = async (req, res, next) => {
   try {
-    const businesses = await Business.findAll({
+    const { page, limit, offset } = paginate(req.query);
+
+    const { count, rows: businesses } = await Business.findAndCountAll({
       where: { ownerId: req.user.id },
       include: [
         { model: Category, as: 'category', attributes: ['id', 'name', 'slug'] },
@@ -422,6 +426,8 @@ exports.getMyBusinesses = async (req, res, next) => {
         },
       ],
       order: [['createdAt', 'DESC']],
+      limit,
+      offset,
     });
 
     // Her işletme için aktif paket sayısı ve onay durumu ekle
@@ -457,7 +463,7 @@ exports.getMyBusinesses = async (req, res, next) => {
       })
     );
 
-    res.json({ businesses: businessesWithStats });
+    res.json(paginatedResponse(businessesWithStats, count, page, limit));
   } catch (error) {
     next(error);
   }

@@ -4,7 +4,7 @@ const { z } = require("zod");
 const registerSchema = z.object({
   name: z.string().min(1, "Ad soyad gerekli"),
   email: z.string().email("Geçerli bir e-posta adresi girin"),
-  password: z.string().min(6, "Şifre en az 6 karakter olmalı"),
+  password: z.string().min(8, "Şifre en az 8 karakter olmalı"),
   phone: z.string().optional(),
   role: z.enum(["customer", "business_owner"]).optional(),
 });
@@ -152,7 +152,7 @@ const forgotPasswordSchema = z.object({
 
 const resetPasswordSchema = z.object({
   token: z.string().min(1, "Token gerekli"),
-  password: z.string().min(6, "Şifre en az 6 karakter olmalı"),
+  password: z.string().min(8, "Şifre en az 8 karakter olmalı"),
 });
 
 module.exports = {

@@ -1,8 +1,7 @@
-const { Order, SurprisePackage, Business, User, Notification, Coupon } = require('../models');
+const { Order, SurprisePackage, Business, User, Notification, Coupon, sequelize } = require('../models');
 const { Op } = require('sequelize');
 const { generatePickupCode, paginate, paginatedResponse } = require('../utils/helpers');
 const { notifyNewOrder } = require('../services/notificationService');
-const sequelize = require('../config/database');
 
 exports.create = async (req, res, next) => {
   const t = await sequelize.transaction();
@@ -20,11 +19,6 @@ exports.create = async (req, res, next) => {
     if (!pkg.isActive) {
       await t.rollback();
       return res.status(400).json({ message: 'Bu paket artık aktif değil' });
-    }
-
-    if (pkg.remainingQuantity < orderQuantity) {
-      await t.rollback();
-      return res.status(400).json({ message: 'Yeterli stok yok' });
     }
 
     let totalPrice = parseFloat(pkg.discountedPrice) * orderQuantity;
@@ -91,9 +85,22 @@ exports.create = async (req, res, next) => {
       pickupCode,
     }, { transaction: t });
 
-    await pkg.update({
-      remainingQuantity: pkg.remainingQuantity - orderQuantity,
-    }, { transaction: t });
+    // Atomic stock decrement to prevent race conditions
+    const [affectedRows] = await SurprisePackage.update(
+      { remainingQuantity: sequelize.literal(`"remainingQuantity" - ${parseInt(orderQuantity)}`) },
+      {
+        where: {
+          id: packageId,
+          remainingQuantity: { [Op.gte]: orderQuantity }
+        },
+        transaction: t
+      }
+    );
+
+    if (affectedRows === 0) {
+      await t.rollback();
+      return res.status(400).json({ message: 'Yetersiz stok' });
+    }
 
     await t.commit();
 

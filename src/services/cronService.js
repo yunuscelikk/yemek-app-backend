@@ -1,6 +1,7 @@
 const cron = require('node-cron');
 const { Notification } = require('../models');
 const { Op } = require('sequelize');
+const logger = require('./logger');
 
 // Her gün gece 3'te çalıştır
 const startNotificationCleanupJob = () => {
@@ -16,13 +17,13 @@ const startNotificationCleanupJob = () => {
         },
       });
 
-      console.log(`${deletedCount} eski bildirim silindi`);
+      logger.info(`${deletedCount} eski bildirim silindi`);
     } catch (error) {
-      console.error('Bildirim temizleme hatası:', error);
+      logger.error('Bildirim temizleme hatası:', error);
     }
   });
 
-  console.log('Bildirim temizleme jobu başlatıldı');
+  logger.info('Bildirim temizleme jobu başlatıldı');
 };
 
 module.exports = { startNotificationCleanupJob };

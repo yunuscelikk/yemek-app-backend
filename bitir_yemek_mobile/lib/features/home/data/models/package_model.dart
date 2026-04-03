@@ -77,7 +77,7 @@ class PackageModel {
   static bool _parseBool(dynamic value) {
     if (value is bool) return value;
     if (value is String) return value.toLowerCase() == 'true';
-    return true; // Default to true for isActive/isRecurring
+    return false; // Default to false for safety
   }
 
   static String? _parseString(dynamic value) {

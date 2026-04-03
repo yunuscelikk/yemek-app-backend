@@ -1,4 +1,5 @@
 const nodemailer = require('nodemailer');
+const logger = require('./logger');
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || 'smtp.gmail.com',
@@ -12,7 +13,7 @@ const transporter = nodemailer.createTransport({
 
 const sendMail = async (to, subject, html) => {
   if (!process.env.SMTP_USER) {
-    console.log(`[Email] SMTP yapılandırılmamış. Konu: ${subject}, Alıcı: ${to}`);
+    logger.info(`[Email] SMTP yapılandırılmamış. Konu: ${subject}, Alıcı: ${to}`);
     return;
   }
 

@@ -18,6 +18,7 @@ import '../../../orders/presentation/bloc/orders_bloc.dart';
 import '../../../orders/presentation/pages/orders_page.dart';
 import '../../../search/presentation/bloc/search_bloc.dart';
 import '../../../search/presentation/pages/search_page.dart';
+import '../../../map/presentation/pages/map_page.dart';
 import '../../../favorites/data/datasources/favorites_remote_datasource.dart';
 import '../../../favorites/data/repositories/favorites_repository_impl.dart';
 import '../../../favorites/presentation/bloc/favorites_bloc.dart';
@@ -41,11 +42,16 @@ class MainScaffold extends StatefulWidget {
 
 class _MainScaffoldState extends State<MainScaffold> {
   late int _currentIndex;
+  late final SharedPrefsTokenStorage _tokenStorage;
+  late final DioClient _dioClient;
 
   @override
   void initState() {
     super.initState();
     _currentIndex = widget.initialIndex;
+    // Create shared instances for auth interceptor
+    _tokenStorage = SharedPrefsTokenStorage();
+    _dioClient = DioClient(tokenStorage: _tokenStorage);
   }
 
   @override
@@ -58,7 +64,7 @@ class _MainScaffoldState extends State<MainScaffold> {
               PackagesBloc(
                 repository: BusinessesRepositoryImpl(
                   remoteDataSource: BusinessesRemoteDataSource(
-                    dioClient: DioClient(),
+                    dioClient: _dioClient,
                   ),
                 ),
               )..add(
@@ -72,7 +78,7 @@ class _MainScaffoldState extends State<MainScaffold> {
           create: (context) => HomeBloc(
             repository: BusinessesRepositoryImpl(
               remoteDataSource: BusinessesRemoteDataSource(
-                dioClient: DioClient(),
+                dioClient: _dioClient,
               ),
             ),
           )..add(LoadCategories()),
@@ -82,7 +88,7 @@ class _MainScaffoldState extends State<MainScaffold> {
           create: (context) => SearchBloc(
             repository: BusinessesRepositoryImpl(
               remoteDataSource: BusinessesRemoteDataSource(
-                dioClient: DioClient(),
+                dioClient: _dioClient,
               ),
             ),
           ),
@@ -90,13 +96,11 @@ class _MainScaffoldState extends State<MainScaffold> {
         // Orders Bloc
         BlocProvider(
           create: (context) {
-            final tokenStorage = SharedPrefsTokenStorage();
-            final dioClient = DioClient();
             return OrdersBloc(
               repository: OrdersRepositoryImpl(
                 remoteDataSource: OrdersRemoteDataSource(
-                  dioClient: dioClient,
-                  tokenStorage: tokenStorage,
+                  dioClient: _dioClient,
+                  tokenStorage: _tokenStorage,
                 ),
               ),
             )..add(const LoadOrders());
@@ -105,13 +109,11 @@ class _MainScaffoldState extends State<MainScaffold> {
         // Favorites Bloc
         BlocProvider(
           create: (context) {
-            final tokenStorage = SharedPrefsTokenStorage();
-            final dioClient = DioClient();
             return FavoritesBloc(
               repository: FavoritesRepositoryImpl(
                 remoteDataSource: FavoritesRemoteDataSource(
-                  dioClient: dioClient,
-                  tokenStorage: tokenStorage,
+                  dioClient: _dioClient,
+                  tokenStorage: _tokenStorage,
                 ),
               ),
             )..add(const LoadFavorites());
@@ -120,54 +122,20 @@ class _MainScaffoldState extends State<MainScaffold> {
         // Profile Bloc
         BlocProvider(
           create: (context) {
-            final tokenStorage = SharedPrefsTokenStorage();
-            final dioClient = DioClient();
             return ProfileBloc(
               profileRepository: ProfileRepositoryImpl(
                 remoteDataSource: ProfileRemoteDataSource(
-                  dioClient: dioClient,
-                  tokenStorage: tokenStorage,
+                  dioClient: _dioClient,
+                  tokenStorage: _tokenStorage,
                 ),
-                tokenStorage: tokenStorage,
+                tokenStorage: _tokenStorage,
               ),
             )..add(LoadProfile());
           },
         ),
       ],
       child: Scaffold(
-        body: IndexedStack(
-          index: _currentIndex,
-          children: [
-            // 0 - Keşfet (Home)
-            HomePage(latitude: widget.latitude, longitude: widget.longitude),
-            // 1 - Ara (Search)
-            SearchPage(latitude: widget.latitude, longitude: widget.longitude),
-            // 2 - Sipariş (Orders)
-            OrdersPage(
-              onNavigateToHome: () {
-                setState(() {
-                  _currentIndex = 0;
-                });
-              },
-            ),
-            // 3 - Favoriler (Favorites)
-            FavoritesPage(
-              onNavigateToHome: () {
-                setState(() {
-                  _currentIndex = 0;
-                });
-              },
-            ),
-            // 4 - Profil (Profile)
-            ProfilePage(
-              onTabSwitch: (index) {
-                setState(() {
-                  _currentIndex = index;
-                });
-              },
-            ),
-          ],
-        ),
+        body: _buildBody(),
         bottomNavigationBar: BottomNavBar(
           currentIndex: _currentIndex,
           onTap: (index) {
@@ -179,5 +147,56 @@ class _MainScaffoldState extends State<MainScaffold> {
       ),
     );
   }
-}
 
+  Widget _buildBody() {
+    // MapPage uses a native PlatformView (Mapbox GL) that requires being
+    // visible when created. IndexedStack builds all children eagerly which
+    // prevents the GL surface from initialising off-screen.
+    // We show MapPage directly when selected, and keep the other pages in
+    // an IndexedStack so they preserve state across tab switches.
+    if (_currentIndex == 2) {
+      return MapPage(
+        latitude: widget.latitude,
+        longitude: widget.longitude,
+        dioClient: _dioClient,
+      );
+    }
+
+    // Map the visual index to IndexedStack index (0,1 stay the same; 3,4,5 → 2,3,4)
+    final stackIndex = _currentIndex > 2 ? _currentIndex - 1 : _currentIndex;
+
+    return IndexedStack(
+      index: stackIndex,
+      children: [
+        // 0 - Keşfet (Home)
+        HomePage(latitude: widget.latitude, longitude: widget.longitude),
+        // 1 - Ara (Search)
+        SearchPage(latitude: widget.latitude, longitude: widget.longitude),
+        // 2 - Sipariş (Orders)  [nav index 3]
+        OrdersPage(
+          onNavigateToHome: () {
+            setState(() {
+              _currentIndex = 0;
+            });
+          },
+        ),
+        // 3 - Favoriler (Favorites)  [nav index 4]
+        FavoritesPage(
+          onNavigateToHome: () {
+            setState(() {
+              _currentIndex = 0;
+            });
+          },
+        ),
+        // 4 - Profil (Profile)  [nav index 5]
+        ProfilePage(
+          onTabSwitch: (index) {
+            setState(() {
+              _currentIndex = index;
+            });
+          },
+        ),
+      ],
+    );
+  }
+}

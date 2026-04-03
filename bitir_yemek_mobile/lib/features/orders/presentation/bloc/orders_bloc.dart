@@ -13,6 +13,7 @@ class OrdersBloc extends Bloc<OrdersEvent, OrdersState> {
   List<OrderModel> _allOrders = [];
   int _currentPage = 1;
   bool _hasReachedMax = false;
+  bool _isLoadingMore = false;
 
   OrdersBloc({required OrdersRepository repository})
     : _repository = repository,
@@ -50,10 +51,11 @@ class OrdersBloc extends Bloc<OrdersEvent, OrdersState> {
     LoadMoreOrders event,
     Emitter<OrdersState> emit,
   ) async {
-    if (_hasReachedMax) return;
+    if (_isLoadingMore || _hasReachedMax) return;
     final currentState = state;
     if (currentState is! OrdersLoaded) return;
 
+    _isLoadingMore = true;
     emit(OrdersLoadingMore(orders: _allOrders, filter: currentState.filter));
 
     try {
@@ -77,6 +79,8 @@ class OrdersBloc extends Bloc<OrdersEvent, OrdersState> {
           filter: currentState.filter,
         ),
       );
+    } finally {
+      _isLoadingMore = false;
     }
   }
 

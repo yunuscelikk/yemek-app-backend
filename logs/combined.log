@@ -1,0 +1,212 @@
+{"level":"info","message":"PostgreSQL bağlantısı başarılı","service":"bitir-yemek","timestamp":"2026-04-03 22:25:11"}
+{"level":"info","message":"Veritabanı bağlantısı hazır","service":"bitir-yemek","timestamp":"2026-04-03 22:25:11"}
+{"level":"info","message":"Sunucu http://localhost:3000 adresinde çalışıyor","service":"bitir-yemek","timestamp":"2026-04-03 22:25:11"}
+{"level":"info","message":"PostgreSQL bağlantısı başarılı","service":"bitir-yemek","timestamp":"2026-04-03 22:25:27"}
+{"level":"info","message":"Veritabanı bağlantısı hazır","service":"bitir-yemek","timestamp":"2026-04-03 22:25:27"}
+{"level":"info","message":"Sunucu http://localhost:3000 adresinde çalışıyor","service":"bitir-yemek","timestamp":"2026-04-03 22:25:27"}
+{"level":"info","message":"PostgreSQL bağlantısı başarılı","service":"bitir-yemek","timestamp":"2026-04-03 22:25:34"}
+{"level":"info","message":"Veritabanı bağlantısı hazır","service":"bitir-yemek","timestamp":"2026-04-03 22:25:34"}
+{"level":"info","message":"Sunucu http://localhost:3000 adresinde çalışıyor","service":"bitir-yemek","timestamp":"2026-04-03 22:25:34"}
+{"level":"info","message":"PostgreSQL bağlantısı başarılı","service":"bitir-yemek","timestamp":"2026-04-03 22:25:40"}
+{"level":"info","message":"Veritabanı bağlantısı hazır","service":"bitir-yemek","timestamp":"2026-04-03 22:25:40"}
+{"level":"info","message":"Sunucu http://localhost:3000 adresinde çalışıyor","service":"bitir-yemek","timestamp":"2026-04-03 22:25:40"}
+{"level":"info","message":"PostgreSQL bağlantısı başarılı","service":"bitir-yemek","timestamp":"2026-04-03 22:25:47"}
+{"level":"info","message":"Veritabanı bağlantısı hazır","service":"bitir-yemek","timestamp":"2026-04-03 22:25:47"}
+{"level":"info","message":"Sunucu http://localhost:3000 adresinde çalışıyor","service":"bitir-yemek","timestamp":"2026-04-03 22:25:47"}
+{"level":"info","message":"PostgreSQL bağlantısı başarılı","service":"bitir-yemek","timestamp":"2026-04-03 22:26:05"}
+{"level":"info","message":"Veritabanı bağlantısı hazır","service":"bitir-yemek","timestamp":"2026-04-03 22:26:05"}
+{"level":"info","message":"Sunucu http://localhost:3000 adresinde çalışıyor","service":"bitir-yemek","timestamp":"2026-04-03 22:26:05"}
+{"level":"info","message":"PostgreSQL bağlantısı başarılı","service":"bitir-yemek","timestamp":"2026-04-03 22:26:22"}
+{"level":"info","message":"Veritabanı bağlantısı hazır","service":"bitir-yemek","timestamp":"2026-04-03 22:26:22"}
+{"level":"info","message":"Bildirim temizleme jobu başlatıldı","service":"bitir-yemek","timestamp":"2026-04-03 22:26:22"}
+{"level":"info","message":"Sunucu http://localhost:3000 adresinde çalışıyor","service":"bitir-yemek","timestamp":"2026-04-03 22:26:22"}
+{"level":"info","message":"PostgreSQL bağlantısı başarılı","service":"bitir-yemek","timestamp":"2026-04-03 22:26:27"}
+{"level":"info","message":"Veritabanı bağlantısı hazır","service":"bitir-yemek","timestamp":"2026-04-03 22:26:27"}
+{"level":"info","message":"Bildirim temizleme jobu başlatıldı","service":"bitir-yemek","timestamp":"2026-04-03 22:26:27"}
+{"level":"info","message":"Sunucu http://localhost:3000 adresinde çalışıyor","service":"bitir-yemek","timestamp":"2026-04-03 22:26:27"}
+{"level":"info","message":"PostgreSQL bağlantısı başarılı","service":"bitir-yemek","timestamp":"2026-04-03 22:26:33"}
+{"level":"info","message":"Veritabanı bağlantısı hazır","service":"bitir-yemek","timestamp":"2026-04-03 22:26:33"}
+{"level":"info","message":"Bildirim temizleme jobu başlatıldı","service":"bitir-yemek","timestamp":"2026-04-03 22:26:33"}
+{"level":"info","message":"Sunucu http://localhost:3000 adresinde çalışıyor","service":"bitir-yemek","timestamp":"2026-04-03 22:26:33"}
+{"level":"info","message":"PostgreSQL bağlantısı başarılı","service":"bitir-yemek","timestamp":"2026-04-03 22:27:15"}
+{"level":"info","message":"Veritabanı bağlantısı hazır","service":"bitir-yemek","timestamp":"2026-04-03 22:27:15"}
+{"level":"info","message":"Bildirim temizleme jobu başlatıldı","service":"bitir-yemek","timestamp":"2026-04-03 22:27:15"}
+{"level":"info","message":"Sunucu http://localhost:3000 adresinde çalışıyor","service":"bitir-yemek","timestamp":"2026-04-03 22:27:15"}
+{"level":"info","message":"PostgreSQL bağlantısı başarılı","service":"bitir-yemek","timestamp":"2026-04-03 22:27:17"}
+{"level":"info","message":"Veritabanı bağlantısı hazır","service":"bitir-yemek","timestamp":"2026-04-03 22:27:17"}
+{"level":"info","message":"Bildirim temizleme jobu başlatıldı","service":"bitir-yemek","timestamp":"2026-04-03 22:27:17"}
+{"level":"info","message":"Sunucu http://localhost:3000 adresinde çalışıyor","service":"bitir-yemek","timestamp":"2026-04-03 22:27:17"}
+{"level":"info","message":"PostgreSQL bağlantısı başarılı","service":"bitir-yemek","timestamp":"2026-04-03 22:27:23"}
+{"level":"info","message":"Veritabanı bağlantısı hazır","service":"bitir-yemek","timestamp":"2026-04-03 22:27:23"}
+{"level":"info","message":"Bildirim temizleme jobu başlatıldı","service":"bitir-yemek","timestamp":"2026-04-03 22:27:23"}
+{"level":"info","message":"Sunucu http://localhost:3000 adresinde çalışıyor","service":"bitir-yemek","timestamp":"2026-04-03 22:27:23"}
+{"level":"info","message":"PostgreSQL bağlantısı başarılı","service":"bitir-yemek","timestamp":"2026-04-03 22:27:37"}
+{"level":"info","message":"Veritabanı bağlantısı hazır","service":"bitir-yemek","timestamp":"2026-04-03 22:27:37"}
+{"level":"info","message":"Bildirim temizleme jobu başlatıldı","service":"bitir-yemek","timestamp":"2026-04-03 22:27:37"}
+{"level":"info","message":"Sunucu http://localhost:3000 adresinde çalışıyor","service":"bitir-yemek","timestamp":"2026-04-03 22:27:37"}
+{"level":"info","message":"PostgreSQL bağlantısı başarılı","service":"bitir-yemek","timestamp":"2026-04-03 22:27:45"}
+{"level":"info","message":"Veritabanı bağlantısı hazır","service":"bitir-yemek","timestamp":"2026-04-03 22:27:45"}
+{"level":"info","message":"Bildirim temizleme jobu başlatıldı","service":"bitir-yemek","timestamp":"2026-04-03 22:27:45"}
+{"level":"info","message":"Sunucu http://localhost:3000 adresinde çalışıyor","service":"bitir-yemek","timestamp":"2026-04-03 22:27:45"}
+{"level":"info","message":"PostgreSQL bağlantısı başarılı","service":"bitir-yemek","timestamp":"2026-04-03 22:27:50"}
+{"level":"info","message":"Veritabanı bağlantısı hazır","service":"bitir-yemek","timestamp":"2026-04-03 22:27:50"}
+{"level":"info","message":"Bildirim temizleme jobu başlatıldı","service":"bitir-yemek","timestamp":"2026-04-03 22:27:50"}
+{"level":"info","message":"Sunucu http://localhost:3000 adresinde çalışıyor","service":"bitir-yemek","timestamp":"2026-04-03 22:27:50"}
+{"level":"info","message":"PostgreSQL bağlantısı başarılı","service":"bitir-yemek","timestamp":"2026-04-03 22:27:52"}
+{"level":"info","message":"Veritabanı bağlantısı hazır","service":"bitir-yemek","timestamp":"2026-04-03 22:27:52"}
+{"level":"info","message":"Bildirim temizleme jobu başlatıldı","service":"bitir-yemek","timestamp":"2026-04-03 22:27:52"}
+{"level":"info","message":"Sunucu http://localhost:3000 adresinde çalışıyor","service":"bitir-yemek","timestamp":"2026-04-03 22:27:52"}
+{"level":"info","message":"PostgreSQL bağlantısı başarılı","service":"bitir-yemek","timestamp":"2026-04-03 22:27:56"}
+{"level":"info","message":"Veritabanı bağlantısı hazır","service":"bitir-yemek","timestamp":"2026-04-03 22:27:56"}
+{"level":"info","message":"Bildirim temizleme jobu başlatıldı","service":"bitir-yemek","timestamp":"2026-04-03 22:27:56"}
+{"level":"info","message":"Sunucu http://localhost:3000 adresinde çalışıyor","service":"bitir-yemek","timestamp":"2026-04-03 22:27:56"}
+{"level":"info","message":"PostgreSQL bağlantısı başarılı","service":"bitir-yemek","timestamp":"2026-04-03 22:27:57"}
+{"level":"info","message":"Veritabanı bağlantısı hazır","service":"bitir-yemek","timestamp":"2026-04-03 22:27:57"}
+{"level":"info","message":"Bildirim temizleme jobu başlatıldı","service":"bitir-yemek","timestamp":"2026-04-03 22:27:57"}
+{"level":"info","message":"Sunucu http://localhost:3000 adresinde çalışıyor","service":"bitir-yemek","timestamp":"2026-04-03 22:27:57"}
+{"level":"info","message":"PostgreSQL bağlantısı başarılı","service":"bitir-yemek","timestamp":"2026-04-03 22:28:10"}
+{"level":"info","message":"Veritabanı bağlantısı hazır","service":"bitir-yemek","timestamp":"2026-04-03 22:28:10"}
+{"level":"info","message":"Bildirim temizleme jobu başlatıldı","service":"bitir-yemek","timestamp":"2026-04-03 22:28:10"}
+{"level":"info","message":"Sunucu http://localhost:3000 adresinde çalışıyor","service":"bitir-yemek","timestamp":"2026-04-03 22:28:10"}
+{"level":"info","message":"PostgreSQL bağlantısı başarılı","service":"bitir-yemek","timestamp":"2026-04-03 22:28:14"}
+{"level":"info","message":"Veritabanı bağlantısı hazır","service":"bitir-yemek","timestamp":"2026-04-03 22:28:14"}
+{"level":"info","message":"Bildirim temizleme jobu başlatıldı","service":"bitir-yemek","timestamp":"2026-04-03 22:28:14"}
+{"level":"info","message":"Sunucu http://localhost:3000 adresinde çalışıyor","service":"bitir-yemek","timestamp":"2026-04-03 22:28:14"}
+{"level":"info","message":"PostgreSQL bağlantısı başarılı","service":"bitir-yemek","timestamp":"2026-04-03 22:28:23"}
+{"level":"info","message":"Veritabanı bağlantısı hazır","service":"bitir-yemek","timestamp":"2026-04-03 22:28:23"}
+{"level":"info","message":"Bildirim temizleme jobu başlatıldı","service":"bitir-yemek","timestamp":"2026-04-03 22:28:23"}
+{"level":"info","message":"Sunucu http://localhost:3000 adresinde çalışıyor","service":"bitir-yemek","timestamp":"2026-04-03 22:28:23"}
+{"level":"info","message":"PostgreSQL bağlantısı başarılı","service":"bitir-yemek","timestamp":"2026-04-03 22:28:32"}
+{"level":"info","message":"Veritabanı bağlantısı hazır","service":"bitir-yemek","timestamp":"2026-04-03 22:28:32"}
+{"level":"info","message":"Bildirim temizleme jobu başlatıldı","service":"bitir-yemek","timestamp":"2026-04-03 22:28:32"}
+{"level":"info","message":"Sunucu http://localhost:3000 adresinde çalışıyor","service":"bitir-yemek","timestamp":"2026-04-03 22:28:32"}
+{"level":"info","message":"PostgreSQL bağlantısı başarılı","service":"bitir-yemek","timestamp":"2026-04-03 22:28:45"}
+{"level":"info","message":"Veritabanı bağlantısı hazır","service":"bitir-yemek","timestamp":"2026-04-03 22:28:45"}
+{"level":"info","message":"Bildirim temizleme jobu başlatıldı","service":"bitir-yemek","timestamp":"2026-04-03 22:28:45"}
+{"level":"info","message":"Sunucu http://localhost:3000 adresinde çalışıyor","service":"bitir-yemek","timestamp":"2026-04-03 22:28:45"}
+{"level":"info","message":"PostgreSQL bağlantısı başarılı","service":"bitir-yemek","timestamp":"2026-04-03 22:28:49"}
+{"level":"info","message":"Veritabanı bağlantısı hazır","service":"bitir-yemek","timestamp":"2026-04-03 22:28:49"}
+{"level":"info","message":"Bildirim temizleme jobu başlatıldı","service":"bitir-yemek","timestamp":"2026-04-03 22:28:49"}
+{"level":"info","message":"Sunucu http://localhost:3000 adresinde çalışıyor","service":"bitir-yemek","timestamp":"2026-04-03 22:28:49"}
+{"level":"info","message":"PostgreSQL bağlantısı başarılı","service":"bitir-yemek","timestamp":"2026-04-03 22:28:55"}
+{"level":"info","message":"Veritabanı bağlantısı hazır","service":"bitir-yemek","timestamp":"2026-04-03 22:28:55"}
+{"level":"info","message":"Bildirim temizleme jobu başlatıldı","service":"bitir-yemek","timestamp":"2026-04-03 22:28:55"}
+{"level":"info","message":"Sunucu http://localhost:3000 adresinde çalışıyor","service":"bitir-yemek","timestamp":"2026-04-03 22:28:55"}
+{"level":"info","message":"PostgreSQL bağlantısı başarılı","service":"bitir-yemek","timestamp":"2026-04-03 22:29:04"}
+{"level":"info","message":"Veritabanı bağlantısı hazır","service":"bitir-yemek","timestamp":"2026-04-03 22:29:04"}
+{"level":"info","message":"Bildirim temizleme jobu başlatıldı","service":"bitir-yemek","timestamp":"2026-04-03 22:29:04"}
+{"level":"info","message":"Sunucu http://localhost:3000 adresinde çalışıyor","service":"bitir-yemek","timestamp":"2026-04-03 22:29:04"}
+{"level":"info","message":"PostgreSQL bağlantısı başarılı","service":"bitir-yemek","timestamp":"2026-04-03 22:29:15"}
+{"level":"info","message":"Veritabanı bağlantısı hazır","service":"bitir-yemek","timestamp":"2026-04-03 22:29:15"}
+{"level":"info","message":"Bildirim temizleme jobu başlatıldı","service":"bitir-yemek","timestamp":"2026-04-03 22:29:15"}
+{"level":"info","message":"Sunucu http://localhost:3000 adresinde çalışıyor","service":"bitir-yemek","timestamp":"2026-04-03 22:29:15"}
+{"level":"info","message":"PostgreSQL bağlantısı başarılı","service":"bitir-yemek","timestamp":"2026-04-03 22:29:18"}
+{"level":"info","message":"Veritabanı bağlantısı hazır","service":"bitir-yemek","timestamp":"2026-04-03 22:29:18"}
+{"level":"info","message":"Bildirim temizleme jobu başlatıldı","service":"bitir-yemek","timestamp":"2026-04-03 22:29:18"}
+{"level":"info","message":"Sunucu http://localhost:3000 adresinde çalışıyor","service":"bitir-yemek","timestamp":"2026-04-03 22:29:18"}
+{"level":"info","message":"PostgreSQL bağlantısı başarılı","service":"bitir-yemek","timestamp":"2026-04-03 22:29:24"}
+{"level":"info","message":"Veritabanı bağlantısı hazır","service":"bitir-yemek","timestamp":"2026-04-03 22:29:24"}
+{"level":"info","message":"Bildirim temizleme jobu başlatıldı","service":"bitir-yemek","timestamp":"2026-04-03 22:29:24"}
+{"level":"info","message":"Sunucu http://localhost:3000 adresinde çalışıyor","service":"bitir-yemek","timestamp":"2026-04-03 22:29:24"}
+{"level":"info","message":"PostgreSQL bağlantısı başarılı","service":"bitir-yemek","timestamp":"2026-04-03 22:29:25"}
+{"level":"info","message":"Veritabanı bağlantısı hazır","service":"bitir-yemek","timestamp":"2026-04-03 22:29:25"}
+{"level":"info","message":"Bildirim temizleme jobu başlatıldı","service":"bitir-yemek","timestamp":"2026-04-03 22:29:25"}
+{"level":"info","message":"Sunucu http://localhost:3000 adresinde çalışıyor","service":"bitir-yemek","timestamp":"2026-04-03 22:29:25"}
+{"level":"info","message":"PostgreSQL bağlantısı başarılı","service":"bitir-yemek","timestamp":"2026-04-03 22:29:34"}
+{"level":"info","message":"Veritabanı bağlantısı hazır","service":"bitir-yemek","timestamp":"2026-04-03 22:29:34"}
+{"level":"info","message":"Bildirim temizleme jobu başlatıldı","service":"bitir-yemek","timestamp":"2026-04-03 22:29:34"}
+{"level":"info","message":"Sunucu http://localhost:3000 adresinde çalışıyor","service":"bitir-yemek","timestamp":"2026-04-03 22:29:34"}
+{"level":"info","message":"PostgreSQL bağlantısı başarılı","service":"bitir-yemek","timestamp":"2026-04-03 22:29:40"}
+{"level":"info","message":"Veritabanı bağlantısı hazır","service":"bitir-yemek","timestamp":"2026-04-03 22:29:40"}
+{"level":"info","message":"Bildirim temizleme jobu başlatıldı","service":"bitir-yemek","timestamp":"2026-04-03 22:29:40"}
+{"level":"info","message":"Sunucu http://localhost:3000 adresinde çalışıyor","service":"bitir-yemek","timestamp":"2026-04-03 22:29:40"}
+{"level":"info","message":"PostgreSQL bağlantısı başarılı","service":"bitir-yemek","timestamp":"2026-04-03 22:30:11"}
+{"level":"info","message":"Veritabanı bağlantısı hazır","service":"bitir-yemek","timestamp":"2026-04-03 22:30:11"}
+{"level":"info","message":"Bildirim temizleme jobu başlatıldı","service":"bitir-yemek","timestamp":"2026-04-03 22:30:11"}
+{"level":"info","message":"Sunucu http://localhost:3000 adresinde çalışıyor","service":"bitir-yemek","timestamp":"2026-04-03 22:30:11"}
+{"level":"info","message":"PostgreSQL bağlantısı başarılı","service":"bitir-yemek","timestamp":"2026-04-03 22:30:16"}
+{"level":"info","message":"Veritabanı bağlantısı hazır","service":"bitir-yemek","timestamp":"2026-04-03 22:30:16"}
+{"level":"info","message":"Bildirim temizleme jobu başlatıldı","service":"bitir-yemek","timestamp":"2026-04-03 22:30:16"}
+{"level":"info","message":"Sunucu http://localhost:3000 adresinde çalışıyor","service":"bitir-yemek","timestamp":"2026-04-03 22:30:16"}
+{"level":"info","message":"PostgreSQL bağlantısı başarılı","service":"bitir-yemek","timestamp":"2026-04-03 22:30:18"}
+{"level":"info","message":"Veritabanı bağlantısı hazır","service":"bitir-yemek","timestamp":"2026-04-03 22:30:18"}
+{"level":"info","message":"Bildirim temizleme jobu başlatıldı","service":"bitir-yemek","timestamp":"2026-04-03 22:30:18"}
+{"level":"info","message":"Sunucu http://localhost:3000 adresinde çalışıyor","service":"bitir-yemek","timestamp":"2026-04-03 22:30:18"}
+{"email":"customer2@example.com","level":"info","message":"User login successful","service":"bitir-yemek","timestamp":"2026-04-03 22:35:51","userId":"3ea18367-72be-43b2-9be8-5b8a9c6113c3"}
+{"email":"john@gmail.com","level":"info","message":"New user registered","role":"business_owner","service":"bitir-yemek","timestamp":"2026-04-03 22:42:56","userId":"72380b03-aaa1-49e0-aead-d81364eca1c7"}
+{"level":"info","message":"[Email] SMTP yapılandırılmamış. Konu: Bitir Yemek - E-posta Doğrulama, Alıcı: john@gmail.com","service":"bitir-yemek","timestamp":"2026-04-03 22:42:56"}
+{"email":"customer2@example.com","level":"info","message":"User login successful","service":"bitir-yemek","timestamp":"2026-04-03 22:43:47","userId":"3ea18367-72be-43b2-9be8-5b8a9c6113c3"}
+{"email":"customer2@example.com","level":"info","message":"User login successful","service":"bitir-yemek","timestamp":"2026-04-03 23:00:12","userId":"3ea18367-72be-43b2-9be8-5b8a9c6113c3"}
+{"email":"customer2@example.com","level":"info","message":"User login successful","service":"bitir-yemek","timestamp":"2026-04-03 23:01:06","userId":"3ea18367-72be-43b2-9be8-5b8a9c6113c3"}
+{"email":"customer2@example.com","level":"info","message":"User login successful","service":"bitir-yemek","timestamp":"2026-04-03 23:08:01","userId":"3ea18367-72be-43b2-9be8-5b8a9c6113c3"}
+{"email":"customer2@example.com","level":"info","message":"User login successful","service":"bitir-yemek","timestamp":"2026-04-03 23:14:05","userId":"3ea18367-72be-43b2-9be8-5b8a9c6113c3"}
+{"level":"info","message":"PostgreSQL bağlantısı başarılı","service":"bitir-yemek","timestamp":"2026-04-03 23:23:27"}
+{"level":"info","message":"Veritabanı bağlantısı hazır","service":"bitir-yemek","timestamp":"2026-04-03 23:23:27"}
+{"level":"info","message":"Bildirim temizleme jobu başlatıldı","service":"bitir-yemek","timestamp":"2026-04-03 23:23:27"}
+{"level":"info","message":"Sunucu http://localhost:3000 adresinde çalışıyor","service":"bitir-yemek","timestamp":"2026-04-03 23:23:27"}
+{"level":"info","message":"PostgreSQL bağlantısı başarılı","service":"bitir-yemek","timestamp":"2026-04-03 23:23:56"}
+{"level":"info","message":"Veritabanı bağlantısı hazır","service":"bitir-yemek","timestamp":"2026-04-03 23:23:56"}
+{"level":"info","message":"Bildirim temizleme jobu başlatıldı","service":"bitir-yemek","timestamp":"2026-04-03 23:23:56"}
+{"level":"info","message":"Sunucu http://localhost:3000 adresinde çalışıyor","service":"bitir-yemek","timestamp":"2026-04-03 23:23:56"}
+{"level":"info","message":"PostgreSQL bağlantısı başarılı","service":"bitir-yemek","timestamp":"2026-04-03 23:24:55"}
+{"level":"info","message":"Veritabanı bağlantısı hazır","service":"bitir-yemek","timestamp":"2026-04-03 23:24:55"}
+{"level":"info","message":"Bildirim temizleme jobu başlatıldı","service":"bitir-yemek","timestamp":"2026-04-03 23:24:55"}
+{"level":"info","message":"Sunucu http://localhost:3000 adresinde çalışıyor","service":"bitir-yemek","timestamp":"2026-04-03 23:24:55"}
+{"level":"info","message":"PostgreSQL bağlantısı başarılı","service":"bitir-yemek","timestamp":"2026-04-03 23:26:05"}
+{"level":"info","message":"Veritabanı bağlantısı hazır","service":"bitir-yemek","timestamp":"2026-04-03 23:26:05"}
+{"level":"info","message":"Bildirim temizleme jobu başlatıldı","service":"bitir-yemek","timestamp":"2026-04-03 23:26:05"}
+{"level":"info","message":"Sunucu http://localhost:3000 adresinde çalışıyor","service":"bitir-yemek","timestamp":"2026-04-03 23:26:05"}
+{"level":"info","message":"PostgreSQL bağlantısı başarılı","service":"bitir-yemek","timestamp":"2026-04-03 23:26:21"}
+{"level":"info","message":"Veritabanı bağlantısı hazır","service":"bitir-yemek","timestamp":"2026-04-03 23:26:21"}
+{"level":"info","message":"Bildirim temizleme jobu başlatıldı","service":"bitir-yemek","timestamp":"2026-04-03 23:26:21"}
+{"level":"info","message":"Sunucu http://localhost:3000 adresinde çalışıyor","service":"bitir-yemek","timestamp":"2026-04-03 23:26:21"}
+{"level":"info","message":"PostgreSQL bağlantısı başarılı","service":"bitir-yemek","timestamp":"2026-04-03 23:26:49"}
+{"level":"info","message":"Veritabanı bağlantısı hazır","service":"bitir-yemek","timestamp":"2026-04-03 23:26:49"}
+{"level":"info","message":"Bildirim temizleme jobu başlatıldı","service":"bitir-yemek","timestamp":"2026-04-03 23:26:49"}
+{"level":"info","message":"Sunucu http://localhost:3000 adresinde çalışıyor","service":"bitir-yemek","timestamp":"2026-04-03 23:26:49"}
+{"level":"info","message":"PostgreSQL bağlantısı başarılı","service":"bitir-yemek","timestamp":"2026-04-03 23:27:59"}
+{"level":"info","message":"Veritabanı bağlantısı hazır","service":"bitir-yemek","timestamp":"2026-04-03 23:28:00"}
+{"level":"info","message":"Bildirim temizleme jobu başlatıldı","service":"bitir-yemek","timestamp":"2026-04-03 23:28:00"}
+{"level":"info","message":"Sunucu http://localhost:3000 adresinde çalışıyor","service":"bitir-yemek","timestamp":"2026-04-03 23:28:00"}
+{"level":"info","message":"PostgreSQL bağlantısı başarılı","service":"bitir-yemek","timestamp":"2026-04-03 23:28:05"}
+{"level":"info","message":"Veritabanı bağlantısı hazır","service":"bitir-yemek","timestamp":"2026-04-03 23:28:05"}
+{"level":"info","message":"Bildirim temizleme jobu başlatıldı","service":"bitir-yemek","timestamp":"2026-04-03 23:28:05"}
+{"level":"info","message":"Sunucu http://localhost:3000 adresinde çalışıyor","service":"bitir-yemek","timestamp":"2026-04-03 23:28:05"}
+{"level":"info","message":"PostgreSQL bağlantısı başarılı","service":"bitir-yemek","timestamp":"2026-04-03 23:33:03"}
+{"level":"info","message":"Veritabanı bağlantısı hazır","service":"bitir-yemek","timestamp":"2026-04-03 23:33:03"}
+{"level":"info","message":"Bildirim temizleme jobu başlatıldı","service":"bitir-yemek","timestamp":"2026-04-03 23:33:03"}
+{"level":"info","message":"Sunucu http://localhost:3000 adresinde çalışıyor","service":"bitir-yemek","timestamp":"2026-04-03 23:33:04"}
+{"level":"info","message":"PostgreSQL bağlantısı başarılı","service":"bitir-yemek","timestamp":"2026-04-03 23:35:38"}
+{"level":"info","message":"Veritabanı bağlantısı hazır","service":"bitir-yemek","timestamp":"2026-04-03 23:35:38"}
+{"level":"info","message":"Bildirim temizleme jobu başlatıldı","service":"bitir-yemek","timestamp":"2026-04-03 23:35:39"}
+{"level":"info","message":"Sunucu http://localhost:3000 adresinde çalışıyor","service":"bitir-yemek","timestamp":"2026-04-03 23:35:39"}
+{"level":"info","message":"PostgreSQL bağlantısı başarılı","service":"bitir-yemek","timestamp":"2026-04-03 23:36:12"}
+{"level":"info","message":"Veritabanı bağlantısı hazır","service":"bitir-yemek","timestamp":"2026-04-03 23:36:12"}
+{"level":"info","message":"Bildirim temizleme jobu başlatıldı","service":"bitir-yemek","timestamp":"2026-04-03 23:36:12"}
+{"level":"info","message":"Sunucu http://localhost:3000 adresinde çalışıyor","service":"bitir-yemek","timestamp":"2026-04-03 23:36:12"}
+{"level":"info","message":"PostgreSQL bağlantısı başarılı","service":"bitir-yemek","timestamp":"2026-04-03 23:38:14"}
+{"level":"info","message":"Veritabanı bağlantısı hazır","service":"bitir-yemek","timestamp":"2026-04-03 23:38:14"}
+{"level":"info","message":"Bildirim temizleme jobu başlatıldı","service":"bitir-yemek","timestamp":"2026-04-03 23:38:15"}
+{"level":"info","message":"Sunucu http://localhost:3000 adresinde çalışıyor","service":"bitir-yemek","timestamp":"2026-04-03 23:38:15"}
+{"level":"info","message":"PostgreSQL bağlantısı başarılı","service":"bitir-yemek","timestamp":"2026-04-03 23:51:22"}
+{"level":"info","message":"Veritabanı bağlantısı hazır","service":"bitir-yemek","timestamp":"2026-04-03 23:51:22"}
+{"level":"info","message":"Bildirim temizleme jobu başlatıldı","service":"bitir-yemek","timestamp":"2026-04-03 23:51:22"}
+{"level":"info","message":"Sunucu http://localhost:3000 adresinde çalışıyor","service":"bitir-yemek","timestamp":"2026-04-03 23:51:22"}
+{"email":"customer2@example.com","level":"info","message":"User login successful","service":"bitir-yemek","timestamp":"2026-04-03 23:51:59","userId":"3ea18367-72be-43b2-9be8-5b8a9c6113c3"}
+{"level":"info","message":"PostgreSQL bağlantısı başarılı","service":"bitir-yemek","timestamp":"2026-04-03 23:56:49"}
+{"level":"info","message":"Veritabanı bağlantısı hazır","service":"bitir-yemek","timestamp":"2026-04-03 23:56:49"}
+{"level":"info","message":"Bildirim temizleme jobu başlatıldı","service":"bitir-yemek","timestamp":"2026-04-03 23:56:49"}
+{"level":"info","message":"Sunucu http://localhost:3000 adresinde çalışıyor","service":"bitir-yemek","timestamp":"2026-04-03 23:56:49"}
+{"level":"info","message":"PostgreSQL bağlantısı başarılı","service":"bitir-yemek","timestamp":"2026-04-03 23:57:02"}
+{"level":"info","message":"Veritabanı bağlantısı hazır","service":"bitir-yemek","timestamp":"2026-04-03 23:57:02"}
+{"level":"info","message":"Bildirim temizleme jobu başlatıldı","service":"bitir-yemek","timestamp":"2026-04-03 23:57:02"}
+{"level":"info","message":"Sunucu http://localhost:3000 adresinde çalışıyor","service":"bitir-yemek","timestamp":"2026-04-03 23:57:02"}
+{"level":"info","message":"PostgreSQL bağlantısı başarılı","service":"bitir-yemek","timestamp":"2026-04-03 23:57:05"}
+{"level":"info","message":"Veritabanı bağlantısı hazır","service":"bitir-yemek","timestamp":"2026-04-03 23:57:05"}
+{"level":"info","message":"Bildirim temizleme jobu başlatıldı","service":"bitir-yemek","timestamp":"2026-04-03 23:57:05"}
+{"level":"info","message":"Sunucu http://localhost:3000 adresinde çalışıyor","service":"bitir-yemek","timestamp":"2026-04-03 23:57:05"}
+{"level":"info","message":"PostgreSQL bağlantısı başarılı","service":"bitir-yemek","timestamp":"2026-04-03 23:57:08"}
+{"level":"info","message":"Veritabanı bağlantısı hazır","service":"bitir-yemek","timestamp":"2026-04-03 23:57:08"}
+{"level":"info","message":"Bildirim temizleme jobu başlatıldı","service":"bitir-yemek","timestamp":"2026-04-03 23:57:08"}
+{"level":"info","message":"Sunucu http://localhost:3000 adresinde çalışıyor","service":"bitir-yemek","timestamp":"2026-04-03 23:57:08"}
+{"email":"customer2@example.com","level":"info","message":"User login successful","service":"bitir-yemek","timestamp":"2026-04-03 23:57:29","userId":"3ea18367-72be-43b2-9be8-5b8a9c6113c3"}

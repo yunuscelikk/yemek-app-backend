@@ -11,11 +11,19 @@ const {
   paginatedResponse,
   haversineDistance,
 } = require("../utils/helpers");
+const cacheService = require('../services/cacheService');
 
 exports.getAll = async (req, res, next) => {
   try {
     const { city, district, categoryId, search, lat, lng, radius } = req.query;
     const { page, limit, offset } = paginate(req.query);
+
+    // Check cache first
+    const cacheKey = `businesses:list:${JSON.stringify(req.query)}`;
+    const cached = await cacheService.get(cacheKey);
+    if (cached) {
+      return res.json(cached);
+    }
 
     const where = { isActive: true, isApproved: true };
     if (city) where.city = city;
@@ -59,7 +67,9 @@ exports.getAll = async (req, res, next) => {
       );
     }
 
-    res.json(paginatedResponse(resultBusinesses, count, page, limit));
+    const responseData = paginatedResponse(resultBusinesses, count, page, limit);
+    await cacheService.set(cacheKey, responseData, 300); // 5 min TTL
+    res.json(responseData);
   } catch (error) {
     next(error);
   }
@@ -124,6 +134,8 @@ exports.create = async (req, res, next) => {
       imageUrl,
     });
 
+    await cacheService.delPattern('businesses:list:*');
+
     res.status(201).json({
       message: "İşletme oluşturuldu",
       business,
@@ -175,6 +187,8 @@ exports.update = async (req, res, next) => {
       isActive,
     });
 
+    await cacheService.delPattern('businesses:list:*');
+
     res.json({
       message: "İşletme güncellendi",
       business,
@@ -199,6 +213,8 @@ exports.remove = async (req, res, next) => {
     }
 
     await business.destroy();
+
+    await cacheService.delPattern('businesses:list:*');
 
     res.json({ message: "İşletme silindi" });
   } catch (error) {

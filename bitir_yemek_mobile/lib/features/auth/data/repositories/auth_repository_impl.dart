@@ -99,6 +99,19 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<String?> getSavedUserRole() async {
     return await _tokenStorage.getUserRole();
   }
+
+  @override
+  Future<UserModel?> getCurrentUser() async {
+    try {
+      final userData = await _tokenStorage.getUserData();
+      if (userData != null) {
+        return UserModel.fromJson(jsonDecode(userData) as Map<String, dynamic>);
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
 }
 
 class AuthResult {
