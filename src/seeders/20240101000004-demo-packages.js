@@ -4,6 +4,12 @@ const { v4: uuidv4 } = require('uuid');
 
 module.exports = {
   async up(queryInterface) {
+    const existing = await queryInterface.sequelize.query(
+      'SELECT id FROM "SurprisePackages" LIMIT 1',
+      { type: queryInterface.sequelize.QueryTypes.SELECT }
+    );
+    if (existing.length > 0) return;
+
     // İşletme ID'lerini al
     const businesses = await queryInterface.sequelize.query(
       `SELECT id, name FROM "Businesses"`,

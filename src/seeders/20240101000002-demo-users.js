@@ -5,6 +5,12 @@ const bcrypt = require('bcryptjs');
 
 module.exports = {
   async up(queryInterface) {
+    const existing = await queryInterface.sequelize.query(
+      'SELECT id FROM "Users" LIMIT 1',
+      { type: queryInterface.sequelize.QueryTypes.SELECT }
+    );
+    if (existing.length > 0) return;
+
     const hashedPassword = await bcrypt.hash('123456', 10);
     
     await queryInterface.bulkInsert('Users', [

@@ -4,6 +4,12 @@ const { v4: uuidv4 } = require('uuid');
 
 module.exports = {
   async up(queryInterface) {
+    const existing = await queryInterface.sequelize.query(
+      'SELECT id FROM "Businesses" LIMIT 1',
+      { type: queryInterface.sequelize.QueryTypes.SELECT }
+    );
+    if (existing.length > 0) return;
+
     // Önce kullanıcı ID'lerini al
     const users = await queryInterface.sequelize.query(
       `SELECT id, email FROM "Users" WHERE role = 'business_owner'`,

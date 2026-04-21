@@ -2,6 +2,12 @@
 
 module.exports = {
   async up(queryInterface) {
+    const existing = await queryInterface.sequelize.query(
+      'SELECT id FROM "Categories" LIMIT 1',
+      { type: queryInterface.sequelize.QueryTypes.SELECT }
+    );
+    if (existing.length > 0) return;
+
     await queryInterface.bulkInsert('Categories', [
       { id: 1, name: 'Restoran', slug: 'restoran', createdAt: new Date(), updatedAt: new Date() },
       { id: 2, name: 'Fırın', slug: 'firin', createdAt: new Date(), updatedAt: new Date() },
