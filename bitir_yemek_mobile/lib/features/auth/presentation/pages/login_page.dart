@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../config/theme.dart';
@@ -347,6 +348,45 @@ class _LoginViewState extends State<LoginView> {
                           ),
                         ),
                       ),
+
+                      // Apple Sign-In Button (iOS only)
+                      if (Platform.isIOS) ...[
+                        const SizedBox(height: AppSpacing.md),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 56,
+                          child: ElevatedButton.icon(
+                            onPressed: state is AuthLoading
+                                ? null
+                                : () {
+                                    context.read<AuthBloc>().add(
+                                      const AppleSignInRequested(
+                                        role: 'customer',
+                                      ),
+                                    );
+                                  },
+                            icon: const Icon(
+                              Icons.apple,
+                              size: 28,
+                              color: Colors.white,
+                            ),
+                            label: Text(
+                              'Apple ile Giriş Yap',
+                              style: AppTypography.button.copyWith(
+                                color: Colors.white,
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.black,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(
+                                  AppRadius.full,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ],
 
                     const SizedBox(height: AppSpacing.xl),

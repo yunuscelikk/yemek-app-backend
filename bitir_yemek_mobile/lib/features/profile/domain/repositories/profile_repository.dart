@@ -5,6 +5,8 @@ abstract class ProfileRepository {
 
   Future<ProfileResult> updateProfile({String? name, String? phone});
 
+  Future<ProfileResult> deleteAccount();
+
   Future<void> logout();
 }
 

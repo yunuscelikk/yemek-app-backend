@@ -1,7 +1,11 @@
 node_modules/
 .env
+.env.*
+env copy
+!.env.example
 .DS_Store
 npm-debug.log*
+logs/
 
 # Secrets
 bitir_yemek_mobile/ios/Secrets.xcconfig

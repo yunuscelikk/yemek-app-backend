@@ -15,6 +15,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     on<LoadProfile>(_onLoadProfile);
     on<UpdateProfile>(_onUpdateProfile);
     on<ProfileLogoutRequested>(_onLogoutRequested);
+    on<DeleteAccountRequested>(_onDeleteAccount);
   }
 
   Future<void> _onLoadProfile(
@@ -68,5 +69,20 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   ) async {
     await _profileRepository.logout();
     emit(ProfileLoggedOut());
+  }
+
+  Future<void> _onDeleteAccount(
+    DeleteAccountRequested event,
+    Emitter<ProfileState> emit,
+  ) async {
+    emit(AccountDeleting());
+
+    final result = await _profileRepository.deleteAccount();
+
+    if (result.isSuccess) {
+      emit(AccountDeleted());
+    } else {
+      emit(AccountDeleteError(message: result.error ?? 'Hesap silinemedi'));
+    }
   }
 }

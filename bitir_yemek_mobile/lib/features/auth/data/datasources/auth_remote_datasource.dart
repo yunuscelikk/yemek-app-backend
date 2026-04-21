@@ -77,6 +77,31 @@ class AuthRemoteDataSource {
     }
   }
 
+  Future<Map<String, dynamic>> appleLogin({
+    required String identityToken,
+    required String userIdentifier,
+    String? email,
+    String? fullName,
+    String role = 'customer',
+  }) async {
+    try {
+      final response = await _dioClient.dio.post(
+        '/auth/apple',
+        data: {
+          'identityToken': identityToken,
+          'userIdentifier': userIdentifier,
+          if (email != null) 'email': email,
+          if (fullName != null) 'fullName': fullName,
+          'role': role,
+        },
+      );
+
+      return response.data as Map<String, dynamic>;
+    } on DioException catch (e) {
+      throw _handleDioError(e);
+    }
+  }
+
   Future<Map<String, dynamic>> forgotPassword(String email) async {
     try {
       final response = await _dioClient.dio.post(

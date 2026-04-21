@@ -2,11 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>NSAppTransportSecurity</key>
-	<dict>
-		<key>NSAllowsArbitraryLoads</key>
-		<true/>
-	</dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>
@@ -27,10 +22,40 @@
 	<string>$(FLUTTER_BUILD_NAME)</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.903437063740-k6sd7h1j9ou3rc27rjrfp9q0h58efeqh</string>
+			</array>
+		</dict>
+	</array>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<key>GIDClientID</key>
+	<string>903437063740-k6sd7h1j9ou3rc27rjrfp9q0h58efeqh.apps.googleusercontent.com</string>
+	<key>Keychain Sharing</key>
+	<array>
+		<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>MBXAccessToken</key>
+	<string>$(MAPBOX_ACCESS_TOKEN)</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>Yakınınızdaki işletmeleri bulmak için konumunuza ihtiyacımız var.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Yakınınızdaki işletmeleri bulmak için konumunuza ihtiyacımız var.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Yakınınızdaki işletmeleri bulmak için konumunuza ihtiyacımız var.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
@@ -54,14 +79,6 @@
 	</dict>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Yakınınızdaki işletmeleri bulmak için konumunuza ihtiyacımız var.</string>
-	<key>NSLocationAlwaysUsageDescription</key>
-	<string>Yakınınızdaki işletmeleri bulmak için konumunuza ihtiyacımız var.</string>
-	<key>Keychain Sharing</key>
-	<array>
-		<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
-	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
@@ -69,8 +86,6 @@
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>UISupportedInterfaceOrientations~ipad</key>
 	<array>
@@ -78,21 +93,6 @@
 		<string>UIInterfaceOrientationPortraitUpsideDown</string>
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
-	</array>
-	<key>MBXAccessToken</key>
-	<string>$(MAPBOX_ACCESS_TOKEN)</string>
-	<key>GIDClientID</key>
-	<string>903437063740-k6sd7h1j9ou3rc27rjrfp9q0h58efeqh.apps.googleusercontent.com</string>
-	<key>CFBundleURLTypes</key>
-	<array>
-		<dict>
-			<key>CFBundleTypeRole</key>
-			<string>Editor</string>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>com.googleusercontent.apps.903437063740-k6sd7h1j9ou3rc27rjrfp9q0h58efeqh</string>
-			</array>
-		</dict>
 	</array>
 </dict>
 </plist>

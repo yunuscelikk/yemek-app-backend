@@ -126,4 +126,7 @@ router.post('/reset-password', validate(resetPasswordSchema), authController.res
 // Google Sign-In
 router.post('/google', authController.googleLogin);
 
+// Apple Sign-In
+router.post('/apple', authController.appleLogin);
+
 module.exports = router;

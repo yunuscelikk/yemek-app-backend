@@ -17,7 +17,7 @@ class ProfilePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocConsumer<ProfileBloc, ProfileState>(
       listener: (context, state) {
-        if (state is ProfileLoggedOut) {
+        if (state is ProfileLoggedOut || state is AccountDeleted) {
           Navigator.of(context).pushAndRemoveUntil(
             MaterialPageRoute(builder: (_) => const WelcomePage()),
             (route) => false,
@@ -30,6 +30,13 @@ class ProfilePage extends StatelessWidget {
             ),
           );
         } else if (state is ProfileUpdateError) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: AppColors.error,
+            ),
+          );
+        } else if (state is AccountDeleteError) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(state.message),
@@ -406,8 +413,7 @@ class ProfilePage extends StatelessWidget {
           ElevatedButton(
             onPressed: () {
               Navigator.of(dialogContext).pop();
-              // Logout and redirect - backend admin handles actual deletion
-              context.read<ProfileBloc>().add(ProfileLogoutRequested());
+              context.read<ProfileBloc>().add(DeleteAccountRequested());
             },
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
             child: const Text('Hesabi Sil'),

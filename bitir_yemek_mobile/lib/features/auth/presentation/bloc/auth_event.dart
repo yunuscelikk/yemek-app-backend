@@ -53,6 +53,15 @@ class GoogleSignInRequested extends AuthEvent {
   List<Object?> get props => [role];
 }
 
+class AppleSignInRequested extends AuthEvent {
+  final String role;
+
+  const AppleSignInRequested({this.role = 'customer'});
+
+  @override
+  List<Object?> get props => [role];
+}
+
 class ForgotPasswordRequested extends AuthEvent {
   final String email;
 

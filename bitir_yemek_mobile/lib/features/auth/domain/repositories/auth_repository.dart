@@ -16,6 +16,8 @@ abstract class AuthRepository {
 
   Future<AuthResult> googleLogin({required String role});
 
+  Future<AuthResult> appleLogin({required String role});
+
   Future<String?> getAccessToken();
 
   Future<String?> getRefreshToken();

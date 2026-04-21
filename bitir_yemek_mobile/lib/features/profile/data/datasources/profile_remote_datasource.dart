@@ -37,12 +37,18 @@ class ProfileRemoteDataSource {
       await _ensureAuth();
       final response = await _dioClient.dio.put(
         '/users/profile',
-        data: {
-          'name': ?name,
-          'phone': ?phone,
-        },
+        data: {'name': ?name, 'phone': ?phone},
       );
       return response.data as Map<String, dynamic>;
+    } on DioException catch (e) {
+      throw _handleDioError(e);
+    }
+  }
+
+  Future<void> deleteAccount() async {
+    try {
+      await _ensureAuth();
+      await _dioClient.dio.delete('/users/profile');
     } on DioException catch (e) {
       throw _handleDioError(e);
     }

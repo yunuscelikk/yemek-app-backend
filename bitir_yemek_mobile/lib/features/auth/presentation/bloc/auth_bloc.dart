@@ -17,6 +17,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<LogoutRequested>(_onLogoutRequested);
     on<CheckAuthStatus>(_onCheckAuthStatus);
     on<GoogleSignInRequested>(_onGoogleSignInRequested);
+    on<AppleSignInRequested>(_onAppleSignInRequested);
     on<ForgotPasswordRequested>(_onForgotPasswordRequested);
     on<ResetPasswordRequested>(_onResetPasswordRequested);
   }
@@ -101,6 +102,21 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     emit(AuthLoading());
 
     final result = await _authRepository.googleLogin(role: event.role);
+
+    if (result.isSuccess) {
+      emit(AuthAuthenticated(user: result.user!));
+    } else {
+      emit(AuthError(message: result.error!));
+    }
+  }
+
+  Future<void> _onAppleSignInRequested(
+    AppleSignInRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(AuthLoading());
+
+    final result = await _authRepository.appleLogin(role: event.role);
 
     if (result.isSuccess) {
       emit(AuthAuthenticated(user: result.user!));

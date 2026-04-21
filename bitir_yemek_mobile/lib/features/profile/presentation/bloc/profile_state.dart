@@ -59,3 +59,16 @@ class ProfileError extends ProfileState {
 }
 
 class ProfileLoggedOut extends ProfileState {}
+
+class AccountDeleting extends ProfileState {}
+
+class AccountDeleted extends ProfileState {}
+
+class AccountDeleteError extends ProfileState {
+  final String message;
+
+  const AccountDeleteError({required this.message});
+
+  @override
+  List<Object?> get props => [message];
+}

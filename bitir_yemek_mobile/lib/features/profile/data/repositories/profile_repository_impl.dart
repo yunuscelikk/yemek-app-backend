@@ -58,6 +58,19 @@ class ProfileRepositoryImpl implements ProfileRepository {
   }
 
   @override
+  Future<ProfileResult> deleteAccount() async {
+    try {
+      await _remoteDataSource.deleteAccount();
+      await _tokenStorage.clearTokens();
+      return ProfileResult.success(message: 'Hesabiniz basariyla silindi');
+    } on ProfileException catch (e) {
+      return ProfileResult.failure(e.message);
+    } catch (e) {
+      return ProfileResult.failure('Hesap silinirken bir hata olustu: $e');
+    }
+  }
+
+  @override
   Future<void> logout() async {
     await _tokenStorage.clearTokens();
   }

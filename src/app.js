@@ -69,9 +69,9 @@ app.use(helmet({
   crossOriginEmbedderPolicy: false,
 }));
 
-// CORS
+// CORS - mobile app sends requests without Origin header, so allow all
 const corsOptions = {
-  origin: process.env.CORS_ORIGIN || (process.env.NODE_ENV === 'production' ? false : '*'),
+  origin: process.env.CORS_ORIGIN || '*',
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,

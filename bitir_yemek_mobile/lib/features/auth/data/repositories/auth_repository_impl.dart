@@ -1,6 +1,9 @@
 import 'dart:convert';
 
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import 'package:crypto/crypto.dart';
+import 'dart:math';
 
 import '../../../../config/constants.dart';
 import '../../../../core/storage/token_storage.dart';
@@ -131,6 +134,88 @@ class AuthRepositoryImpl implements AuthRepository {
     } catch (e) {
       return AuthResult.failure('Google ile giriş başarısız: $e');
     }
+  }
+
+  @override
+  Future<AuthResult> appleLogin({required String role}) async {
+    try {
+      // Generate nonce for security
+      final rawNonce = _generateNonce();
+      final nonce = _sha256ofString(rawNonce);
+
+      final credential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+        nonce: nonce,
+      );
+
+      final identityToken = credential.identityToken;
+      if (identityToken == null) {
+        return AuthResult.failure('Apple kimlik doğrulama başarısız');
+      }
+
+      // Build full name from Apple credential
+      String? fullName;
+      if (credential.givenName != null || credential.familyName != null) {
+        fullName = [
+          credential.givenName,
+          credential.familyName,
+        ].where((e) => e != null && e.isNotEmpty).join(' ');
+        if (fullName.isEmpty) fullName = null;
+      }
+
+      final response = await _remoteDataSource.appleLogin(
+        identityToken: identityToken,
+        userIdentifier: credential.userIdentifier ?? '',
+        email: credential.email,
+        fullName: fullName,
+        role: role,
+      );
+
+      final accessToken = response['accessToken'] as String?;
+      final refreshToken = response['refreshToken'] as String?;
+      final userData = response['user'] as Map<String, dynamic>?;
+
+      if (accessToken == null || refreshToken == null || userData == null) {
+        return AuthResult.failure('Giriş bilgileri alınamadı');
+      }
+
+      await _tokenStorage.saveAccessToken(accessToken);
+      await _tokenStorage.saveRefreshToken(refreshToken);
+
+      final user = UserModel.fromJson(userData);
+      await _tokenStorage.saveUserRole(user.role);
+      await _tokenStorage.saveUserData(jsonEncode(user.toJson()));
+
+      return AuthResult.success(user: user);
+    } on SignInWithAppleAuthorizationException catch (e) {
+      if (e.code == AuthorizationErrorCode.canceled) {
+        return AuthResult.failure('Apple ile giriş iptal edildi');
+      }
+      return AuthResult.failure('Apple ile giriş başarısız: ${e.message}');
+    } on AuthException catch (e) {
+      return AuthResult.failure(e.message);
+    } catch (e) {
+      return AuthResult.failure('Apple ile giriş başarısız: $e');
+    }
+  }
+
+  String _generateNonce([int length = 32]) {
+    const charset =
+        '0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._';
+    final random = Random.secure();
+    return List.generate(
+      length,
+      (_) => charset[random.nextInt(charset.length)],
+    ).join();
+  }
+
+  String _sha256ofString(String input) {
+    final bytes = utf8.encode(input);
+    final digest = sha256.convert(bytes);
+    return digest.toString();
   }
 
   @override

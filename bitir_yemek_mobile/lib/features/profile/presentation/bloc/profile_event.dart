@@ -20,3 +20,5 @@ class UpdateProfile extends ProfileEvent {
 }
 
 class ProfileLogoutRequested extends ProfileEvent {}
+
+class DeleteAccountRequested extends ProfileEvent {}

@@ -8,8 +8,12 @@ const { startNotificationCleanupJob } = require("./services/cronService");
 
 const PORT = process.env.PORT || 3000;
 
-const requiredEnvVars = ['DB_HOST', 'DB_PORT', 'DB_NAME', 'DB_USER', 'DB_PASSWORD', 'JWT_SECRET', 'JWT_REFRESH_SECRET'];
-const recommendedEnvVars = ['SENDGRID_API_KEY', 'SENDGRID_FROM', 'GOOGLE_MAPS_API_KEY', 'GOOGLE_CLIENT_ID'];
+// DB vars are not required if DATABASE_URL is provided (Railway)
+const dbVars = process.env.DATABASE_URL
+  ? []
+  : ['DB_HOST', 'DB_PORT', 'DB_NAME', 'DB_USER', 'DB_PASSWORD'];
+const requiredEnvVars = [...dbVars, 'JWT_SECRET', 'JWT_REFRESH_SECRET'];
+const recommendedEnvVars = ['SENDGRID_API_KEY', 'SENDGRID_FROM', 'GOOGLE_CLIENT_ID'];
 
 const validateEnv = () => {
   const missing = requiredEnvVars.filter(v => !process.env[v]);
@@ -28,8 +32,8 @@ const validateEnv = () => {
 };
 
 const start = async () => {
-  validateEnv();
   try {
+    validateEnv();
     await sequelize.authenticate();
     logger.info("PostgreSQL bağlantısı başarılı");
 
@@ -38,11 +42,12 @@ const start = async () => {
     // Cron job'ları başlat
     startNotificationCleanupJob();
 
-    app.listen(PORT, () => {
-      logger.info(`Sunucu http://localhost:${PORT} adresinde çalışıyor`);
+    app.listen(PORT, '0.0.0.0', () => {
+      logger.info(`Sunucu port ${PORT} üzerinde çalışıyor (${process.env.NODE_ENV || 'development'})`);
     });
   } catch (error) {
-    logger.error("Sunucu başlatılamadı:", { error: error.message });
+    logger.error("Sunucu başlatılamadı:", { error: error.message, stack: error.stack });
+    console.error('FATAL:', error);
     process.exit(1);
   }
 };

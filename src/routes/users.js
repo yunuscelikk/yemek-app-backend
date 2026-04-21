@@ -62,4 +62,20 @@ router.get('/profile', authenticate, userController.getProfile);
  */
 router.put('/profile', authenticate, validate(profileUpdateSchema), userController.updateProfile);
 
+/**
+ * @swagger
+ * /users/profile:
+ *   delete:
+ *     summary: Hesabı sil
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Hesap silindi
+ *       401:
+ *         description: Yetkilendirme hatası
+ */
+router.delete('/profile', authenticate, userController.deleteAccount);
+
 module.exports = router;

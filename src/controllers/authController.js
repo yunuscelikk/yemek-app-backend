@@ -1,4 +1,6 @@
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
+const axios = require('axios');
 const { Op } = require('sequelize');
 const { OAuth2Client } = require('google-auth-library');
 const { User } = require('../models');
@@ -283,3 +285,143 @@ exports.googleLogin = async (req, res, next) => {
     next(error);
   }
 };
+
+// Apple Sign-In
+exports.appleLogin = async (req, res, next) => {
+  try {
+    const { identityToken, userIdentifier, email: clientEmail, fullName, role } = req.body;
+
+    if (!identityToken) {
+      return res.status(400).json({ message: 'Apple identity token gerekli' });
+    }
+
+    // Decode and verify Apple identity token (JWT)
+    let decoded;
+    try {
+      // Decode the token header to get the key id (kid)
+      const header = JSON.parse(
+        Buffer.from(identityToken.split('.')[0], 'base64').toString()
+      );
+
+      // Fetch Apple's public keys
+      const { data: jwks } = await axios.get('https://appleid.apple.com/auth/keys');
+      const appleKey = jwks.keys.find((k) => k.kid === header.kid);
+
+      if (!appleKey) {
+        return res.status(401).json({ message: 'Geçersiz Apple token' });
+      }
+
+      // Convert JWK to PEM
+      const pem = jwkToPem(appleKey);
+
+      decoded = jwt.verify(identityToken, pem, {
+        algorithms: ['RS256'],
+        issuer: 'https://appleid.apple.com',
+      });
+    } catch (err) {
+      logger.warn('Invalid Apple identity token', { error: err.message });
+      return res.status(401).json({ message: 'Geçersiz Apple token' });
+    }
+
+    const appleId = decoded.sub || userIdentifier;
+    const email = decoded.email || clientEmail;
+
+    if (!appleId) {
+      return res.status(400).json({ message: 'Apple kullanıcı kimliği alınamadı' });
+    }
+
+    // Find existing user by appleId or email
+    let user = await User.findOne({ where: { appleId } });
+
+    if (!user) {
+      if (email) {
+        user = await User.findOne({ where: { email } });
+      }
+
+      if (user) {
+        // Link Apple account to existing user
+        await user.update({ appleId, isEmailVerified: true });
+        logger.info('Apple account linked to existing user', { userId: user.id, email });
+      } else {
+        // Create new user
+        const userRole = role === 'business_owner' ? 'business_owner' : 'customer';
+        const userName = fullName || (email ? email.split('@')[0] : `Apple User`);
+        user = await User.create({
+          name: userName,
+          email: email || `apple_${appleId}@privaterelay.appleid.com`,
+          appleId,
+          role: userRole,
+          isEmailVerified: true,
+        });
+        logger.info('New user registered via Apple', { userId: user.id, email: user.email, role: userRole });
+      }
+    }
+
+    const tokens = generateTokens(user);
+
+    logger.info('Apple login successful', { userId: user.id, email: user.email });
+
+    res.json({
+      message: 'Apple ile giriş başarılı',
+      user,
+      ...tokens,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Helper: Convert JWK to PEM format
+function jwkToPem(jwk) {
+  const { n, e } = jwk;
+  const modulus = Buffer.from(n, 'base64url');
+  const exponent = Buffer.from(e, 'base64url');
+
+  // Build DER encoding of RSA public key
+  const modulusEncoded = encodeLength(modulus);
+  const exponentEncoded = encodeLength(exponent);
+
+  const sequenceInner = Buffer.concat([
+    Buffer.from([0x02]), modulusEncoded,
+    Buffer.from([0x02]), exponentEncoded,
+  ]);
+
+  const sequenceOuter = Buffer.concat([
+    Buffer.from([0x30]), derLength(sequenceInner.length), sequenceInner,
+  ]);
+
+  // BitString wrapping
+  const bitString = Buffer.concat([
+    Buffer.from([0x00]), sequenceOuter,
+  ]);
+
+  // Algorithm identifier for RSA
+  const algorithmIdentifier = Buffer.from(
+    '300d06092a864886f70d0101010500', 'hex'
+  );
+
+  const publicKeyInfo = Buffer.concat([
+    Buffer.from([0x30]),
+    derLength(algorithmIdentifier.length + 2 + derLength(bitString.length).length + bitString.length),
+    algorithmIdentifier,
+    Buffer.from([0x03]),
+    derLength(bitString.length),
+    bitString,
+  ]);
+
+  return `-----BEGIN PUBLIC KEY-----\n${publicKeyInfo.toString('base64').match(/.{1,64}/g).join('\n')}\n-----END PUBLIC KEY-----`;
+}
+
+function encodeLength(buf) {
+  // Prepend 0x00 if high bit is set (to indicate positive number)
+  if (buf[0] & 0x80) {
+    return Buffer.concat([Buffer.from([0x00]), buf]);
+  }
+  return buf;
+}
+
+function derLength(length) {
+  if (length < 0x80) return Buffer.from([length]);
+  if (length < 0x100) return Buffer.from([0x81, length]);
+  return Buffer.from([0x82, (length >> 8) & 0xff, length & 0xff]);
+}

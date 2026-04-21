@@ -1,5 +1,30 @@
 const winston = require('winston');
 
+const isProduction = process.env.NODE_ENV === 'production';
+
+const transports = [
+  // Always log to console (needed for Railway/cloud platforms)
+  new winston.transports.Console({
+    format: isProduction
+      ? winston.format.combine(
+          winston.format.timestamp(),
+          winston.format.json()
+        )
+      : winston.format.combine(
+          winston.format.colorize(),
+          winston.format.simple()
+        ),
+  }),
+];
+
+// Only add file transports in non-production (local dev)
+if (!isProduction) {
+  transports.push(
+    new winston.transports.File({ filename: 'logs/error.log', level: 'error' }),
+    new winston.transports.File({ filename: 'logs/combined.log' })
+  );
+}
+
 const logger = winston.createLogger({
   level: process.env.LOG_LEVEL || 'info',
   format: winston.format.combine(
@@ -8,19 +33,7 @@ const logger = winston.createLogger({
     winston.format.json()
   ),
   defaultMeta: { service: 'bitir-yemek' },
-  transports: [
-    new winston.transports.File({ filename: 'logs/error.log', level: 'error' }),
-    new winston.transports.File({ filename: 'logs/combined.log' }),
-  ],
+  transports,
 });
-
-if (process.env.NODE_ENV !== 'production') {
-  logger.add(new winston.transports.Console({
-    format: winston.format.combine(
-      winston.format.colorize(),
-      winston.format.simple()
-    ),
-  }));
-}
 
 module.exports = logger;
