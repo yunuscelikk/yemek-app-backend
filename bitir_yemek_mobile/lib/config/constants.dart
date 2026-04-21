@@ -24,4 +24,9 @@ class AppConstants {
   static const String mapboxAccessToken = String.fromEnvironment(
     'MAPBOX_ACCESS_TOKEN',
   );
+
+  // Google OAuth Client ID - pass via: --dart-define=GOOGLE_CLIENT_ID=xxx
+  static const String googleClientId = String.fromEnvironment(
+    'GOOGLE_CLIENT_ID',
+  );
 }

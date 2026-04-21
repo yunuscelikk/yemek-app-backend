@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import '../../../../config/theme.dart';
+import '../../../../shared/widgets/app_cached_image.dart';
 import '../../../../core/network/dio_client.dart';
 import '../../../../core/storage/token_storage.dart';
 import '../../data/models/package_model.dart';
@@ -20,14 +21,15 @@ class PackageDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dioClient = DioClient();
+    final tokenStorage = createDefaultTokenStorage();
+    final dioClient = DioClient(tokenStorage: tokenStorage);
     return BlocProvider(
       create: (_) => ReservationBloc(
         repository: BusinessesRepositoryImpl(
           remoteDataSource: BusinessesRemoteDataSource(dioClient: dioClient),
         ),
         dioClient: dioClient,
-        tokenStorage: SharedPrefsTokenStorage(),
+        tokenStorage: tokenStorage,
       ),
       child: _PackageDetailView(package: package),
     );
@@ -146,16 +148,18 @@ class _PackageDetailView extends StatelessWidget {
             bloc: favBloc,
             builder: (context, favState) {
               final isFav = favState is FavoritesLoaded
-                  ? favState.favorites.any((f) => f.businessId == package.business.id)
+                  ? favState.favorites.any(
+                      (f) => f.businessId == package.business.id,
+                    )
                   : favState is FavoritesLoadingMore
-                      ? favState.favorites.any((f) => f.businessId == package.business.id)
-                      : false;
+                  ? favState.favorites.any(
+                      (f) => f.businessId == package.business.id,
+                    )
+                  : false;
 
               return GestureDetector(
                 onTap: () {
-                  favBloc!.add(
-                    ToggleFavorite(businessId: package.business.id),
-                  );
+                  favBloc!.add(ToggleFavorite(businessId: package.business.id));
                 },
                 child: Container(
                   margin: const EdgeInsets.all(8),
@@ -187,10 +191,10 @@ class _PackageDetailView extends StatelessWidget {
           children: [
             // Image
             package.imageUrl != null
-                ? Image.network(
-                    package.imageUrl!,
+                ? AppCachedImage(
+                    imageUrl: package.imageUrl,
                     fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => _buildPlaceholderImage(),
+                    placeholder: _buildPlaceholderImage(),
                   )
                 : _buildPlaceholderImage(),
 

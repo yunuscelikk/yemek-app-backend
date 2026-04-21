@@ -1,4 +1,6 @@
-class CategoryModel {
+import 'package:equatable/equatable.dart';
+
+class CategoryModel extends Equatable {
   final int id;
   final String name;
   final String slug;
@@ -12,6 +14,9 @@ class CategoryModel {
       slug: json['slug'] as String,
     );
   }
+
+  @override
+  List<Object?> get props => [id, name, slug];
 
   Map<String, dynamic> toJson() {
     return {'id': id, 'name': name, 'slug': slug};

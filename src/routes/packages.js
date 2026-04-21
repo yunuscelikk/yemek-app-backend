@@ -3,7 +3,7 @@ const packageController = require('../controllers/packageController');
 const { authenticate } = require('../middlewares/auth');
 const { authorize } = require('../middlewares/role');
 const { validate, validateQuery, validateParams } = require('../middlewares/validate');
-const { packageSchema, packageQuerySchema, idParamSchema } = require('../validations/schemas');
+const { packageSchema, packageUpdateSchema, packageQuerySchema, idParamSchema } = require('../validations/schemas');
 
 /**
  * @swagger
@@ -188,7 +188,7 @@ router.post('/', authenticate, authorize('business_owner', 'admin'), validate(pa
  *       404:
  *         description: Paket bulunamadı
  */
-router.put('/:id', authenticate, authorize('business_owner', 'admin'), packageController.update);
+router.put('/:id', authenticate, authorize('business_owner', 'admin'), validateParams(idParamSchema), validate(packageUpdateSchema), packageController.update);
 
 /**
  * @swagger

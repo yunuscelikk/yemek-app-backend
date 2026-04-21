@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../config/theme.dart';
+import '../../../../shared/widgets/app_cached_image.dart';
 import '../../data/models/package_model.dart';
 import '../../data/models/reservation_model.dart';
 import '../bloc/reservation_bloc.dart';
@@ -153,14 +154,11 @@ class _ReservationConfirmSheetState extends State<ReservationConfirmSheet> {
             width: 60,
             height: 60,
             color: AppColors.divider,
-            child: widget.package.imageUrl != null
-                ? Image.network(
-                    widget.package.imageUrl!,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) =>
-                        Icon(Icons.restaurant, color: AppColors.textHint),
-                  )
-                : Icon(Icons.restaurant, color: AppColors.textHint),
+            child: AppCachedImage(
+              imageUrl: widget.package.imageUrl,
+              fit: BoxFit.cover,
+              placeholder: Icon(Icons.restaurant, color: AppColors.textHint),
+            ),
           ),
         ),
         const SizedBox(width: AppSpacing.md),

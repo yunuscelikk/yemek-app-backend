@@ -1,6 +1,7 @@
+import 'package:equatable/equatable.dart';
 import 'business_model.dart';
 
-class PackageModel {
+class PackageModel extends Equatable {
   final String id;
   final String businessId;
   final String title;
@@ -36,6 +37,26 @@ class PackageModel {
     this.recurringDays,
     required this.business,
   });
+
+  @override
+  List<Object?> get props => [
+    id,
+    businessId,
+    title,
+    description,
+    originalPrice,
+    discountedPrice,
+    quantity,
+    remainingQuantity,
+    pickupStart,
+    pickupEnd,
+    pickupDate,
+    imageUrl,
+    isActive,
+    isRecurring,
+    recurringDays,
+    business,
+  ];
 
   factory PackageModel.fromJson(Map<String, dynamic> json) {
     return PackageModel(
@@ -96,11 +117,14 @@ class PackageModel {
   }
 }
 
-class PackagesResponse {
+class PackagesResponse extends Equatable {
   final List<PackageModel> data;
   final PaginationModel pagination;
 
   PackagesResponse({required this.data, required this.pagination});
+
+  @override
+  List<Object?> get props => [data, pagination];
 
   factory PackagesResponse.fromJson(Map<String, dynamic> json) {
     final dataList = (json['data'] as List<dynamic>)

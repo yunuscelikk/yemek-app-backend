@@ -9,6 +9,7 @@ const { startNotificationCleanupJob } = require("./services/cronService");
 const PORT = process.env.PORT || 3000;
 
 const requiredEnvVars = ['DB_HOST', 'DB_PORT', 'DB_NAME', 'DB_USER', 'DB_PASSWORD', 'JWT_SECRET', 'JWT_REFRESH_SECRET'];
+const recommendedEnvVars = ['SENDGRID_API_KEY', 'SENDGRID_FROM', 'GOOGLE_MAPS_API_KEY', 'GOOGLE_CLIENT_ID'];
 
 const validateEnv = () => {
   const missing = requiredEnvVars.filter(v => !process.env[v]);
@@ -18,6 +19,11 @@ const validateEnv = () => {
   if (process.env.NODE_ENV === 'production' && 
       (process.env.JWT_SECRET === 'your_jwt_secret_key_here' || process.env.JWT_SECRET.length < 32)) {
     throw new Error('JWT_SECRET must be a secure value (min 32 chars) in production');
+  }
+  // Warn about missing recommended env vars
+  const missingRecommended = recommendedEnvVars.filter(v => !process.env[v]);
+  if (missingRecommended.length > 0) {
+    logger.warn(`Missing recommended environment variables: ${missingRecommended.join(', ')}. Some features may not work.`);
   }
 };
 

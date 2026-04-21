@@ -7,7 +7,6 @@ import '../bloc/profile_bloc.dart';
 import '../widgets/edit_profile_sheet.dart';
 import '../widgets/profile_header.dart';
 import '../widgets/profile_menu_item.dart';
-import 'notifications_page.dart';
 
 class ProfilePage extends StatelessWidget {
   final void Function(int)? onTabSwitch;
@@ -79,8 +78,9 @@ class ProfilePage extends StatelessWidget {
               child: SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
-                  onPressed:
-                      isUpdating ? null : () => _showEditSheet(context, user),
+                  onPressed: isUpdating
+                      ? null
+                      : () => _showEditSheet(context, user),
                   icon: const Icon(Icons.edit_outlined, size: 18),
                   label: const Text('Profili Duzenle'),
                 ),
@@ -127,57 +127,11 @@ class ProfilePage extends StatelessWidget {
 
             const SizedBox(height: AppSpacing.md),
 
-            // Activity section
-            _buildSection(
-              context,
-              title: 'Aktivite',
-              children: [
-                ProfileMenuItem(
-                  icon: Icons.inventory_2_outlined,
-                  title: 'Siparislerim',
-                  subtitle: 'Siparis gecmisini goruntule',
-                  onTap: () => onTabSwitch?.call(2),
-                ),
-                ProfileMenuItem(
-                  icon: Icons.favorite_outline,
-                  title: 'Favorilerim',
-                  subtitle: 'Favori isletmelerini goruntule',
-                  onTap: () => onTabSwitch?.call(3),
-                ),
-                ProfileMenuItem(
-                  icon: Icons.notifications_outlined,
-                  title: 'Bildirimler',
-                  subtitle: 'Bildirimlerini goruntule',
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const NotificationsPage(),
-                      ),
-                    );
-                  },
-                ),
-              ],
-            ),
-
-            const SizedBox(height: AppSpacing.md),
-
             // Settings section
             _buildSection(
               context,
               title: 'Ayarlar',
               children: [
-                ProfileMenuItem(
-                  icon: Icons.language_outlined,
-                  title: 'Dil',
-                  subtitle: 'Turkce',
-                  onTap: () => _showLanguageSheet(context),
-                ),
-                ProfileMenuItem(
-                  icon: Icons.dark_mode_outlined,
-                  title: 'Tema',
-                  subtitle: 'Acik',
-                  onTap: () => _showThemeSheet(context),
-                ),
                 ProfileMenuItem(
                   icon: Icons.info_outline,
                   title: 'Hakkinda',
@@ -346,151 +300,10 @@ class ProfilePage extends StatelessWidget {
         currentPhone: user.phone,
         onSave: (name, phone) {
           context.read<ProfileBloc>().add(
-                UpdateProfile(name: name, phone: phone),
-              );
+            UpdateProfile(name: name, phone: phone),
+          );
         },
       ),
-    );
-  }
-
-  void _showLanguageSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: AppColors.background,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
-      ),
-      builder: (_) => Padding(
-        padding: const EdgeInsets.all(AppSpacing.screenPadding),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: AppColors.divider,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            Text('Dil Secimi', style: AppTypography.h3),
-            const SizedBox(height: AppSpacing.md),
-            _buildOptionTile(
-              context,
-              icon: Icons.check_circle,
-              iconColor: AppColors.success,
-              title: 'Turkce',
-              subtitle: 'Varsayilan',
-              selected: true,
-            ),
-            const Divider(height: 1, color: AppColors.divider),
-            _buildOptionTile(
-              context,
-              icon: Icons.circle_outlined,
-              iconColor: AppColors.textHint,
-              title: 'English',
-              subtitle: 'Yakinda',
-              selected: false,
-              enabled: false,
-            ),
-            const SizedBox(height: AppSpacing.lg),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showThemeSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: AppColors.background,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
-      ),
-      builder: (_) => Padding(
-        padding: const EdgeInsets.all(AppSpacing.screenPadding),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: AppColors.divider,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            Text('Tema Secimi', style: AppTypography.h3),
-            const SizedBox(height: AppSpacing.md),
-            _buildOptionTile(
-              context,
-              icon: Icons.check_circle,
-              iconColor: AppColors.success,
-              title: 'Acik',
-              subtitle: 'Varsayilan',
-              selected: true,
-            ),
-            const Divider(height: 1, color: AppColors.divider),
-            _buildOptionTile(
-              context,
-              icon: Icons.circle_outlined,
-              iconColor: AppColors.textHint,
-              title: 'Koyu',
-              subtitle: 'Yakinda',
-              selected: false,
-              enabled: false,
-            ),
-            const Divider(height: 1, color: AppColors.divider),
-            _buildOptionTile(
-              context,
-              icon: Icons.circle_outlined,
-              iconColor: AppColors.textHint,
-              title: 'Sistem',
-              subtitle: 'Yakinda',
-              selected: false,
-              enabled: false,
-            ),
-            const SizedBox(height: AppSpacing.lg),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildOptionTile(
-    BuildContext context, {
-    required IconData icon,
-    required Color iconColor,
-    required String title,
-    required String subtitle,
-    required bool selected,
-    bool enabled = true,
-  }) {
-    return ListTile(
-      leading: Icon(icon, color: iconColor),
-      title: Text(
-        title,
-        style: AppTypography.bodyLarge.copyWith(
-          color: enabled ? AppColors.textPrimary : AppColors.textHint,
-        ),
-      ),
-      subtitle: Text(
-        subtitle,
-        style: AppTypography.bodySmall.copyWith(
-          color: enabled ? AppColors.textSecondary : AppColors.textHint,
-        ),
-      ),
-      onTap: enabled
-          ? () => Navigator.of(context).pop()
-          : null,
     );
   }
 
@@ -514,12 +327,9 @@ class ProfilePage extends StatelessWidget {
               child: const Icon(Icons.eco, size: 40, color: Colors.white),
             ),
             const SizedBox(height: AppSpacing.md),
-            Text('Bitir Yemek', style: AppTypography.h2),
+            Text('BitirGitsin', style: AppTypography.h2),
             const SizedBox(height: AppSpacing.xs),
-            Text(
-              'Versiyon 1.0.0',
-              style: AppTypography.bodySmall,
-            ),
+            Text('Versiyon 1.0.0', style: AppTypography.bodySmall),
             const SizedBox(height: AppSpacing.md),
             Text(
               'Gida israfini onlemek icin isletmeler ve musterileri bulusturan platform.',
@@ -530,7 +340,7 @@ class ProfilePage extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.lg),
             Text(
-              'Birlikte israfi bitirelim!',
+              'Birlikte israfi bitirelim, gitsin!',
               style: AppTypography.bodyMedium.copyWith(
                 color: AppColors.primary,
                 fontWeight: FontWeight.w600,

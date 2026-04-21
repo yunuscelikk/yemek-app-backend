@@ -1,4 +1,6 @@
-class OrderPackageRef {
+import 'package:equatable/equatable.dart';
+
+class OrderPackageRef extends Equatable {
   final String id;
   final String title;
   final String pickupDate;
@@ -13,6 +15,9 @@ class OrderPackageRef {
     required this.pickupEnd,
   });
 
+  @override
+  List<Object?> get props => [id, title, pickupDate, pickupStart, pickupEnd];
+
   factory OrderPackageRef.fromJson(Map<String, dynamic> json) {
     return OrderPackageRef(
       id: json['id'] as String,
@@ -24,12 +29,15 @@ class OrderPackageRef {
   }
 }
 
-class OrderUserRef {
+class OrderUserRef extends Equatable {
   final String id;
   final String name;
   final String? phone;
 
   const OrderUserRef({required this.id, required this.name, this.phone});
+
+  @override
+  List<Object?> get props => [id, name, phone];
 
   factory OrderUserRef.fromJson(Map<String, dynamic> json) {
     return OrderUserRef(
@@ -40,7 +48,7 @@ class OrderUserRef {
   }
 }
 
-class OwnerOrderModel {
+class OwnerOrderModel extends Equatable {
   final String id;
   final String status;
   final double totalPrice;
@@ -60,6 +68,18 @@ class OwnerOrderModel {
     this.package,
     this.user,
   });
+
+  @override
+  List<Object?> get props => [
+    id,
+    status,
+    totalPrice,
+    pickupCode,
+    quantity,
+    createdAt,
+    package,
+    user,
+  ];
 
   factory OwnerOrderModel.fromJson(Map<String, dynamic> json) {
     return OwnerOrderModel(

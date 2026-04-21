@@ -4,12 +4,14 @@ import '../../../../config/theme.dart';
 class CustomSearchBar extends StatelessWidget {
   final ValueChanged<String>? onChanged;
   final ValueChanged<String>? onSubmitted;
+  final TextEditingController? controller;
   final String? hintText;
 
   const CustomSearchBar({
     super.key,
     this.onChanged,
     this.onSubmitted,
+    this.controller,
     this.hintText,
   });
 
@@ -35,6 +37,7 @@ class CustomSearchBar extends StatelessWidget {
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: TextField(
+              controller: controller,
               onChanged: onChanged,
               onSubmitted: onSubmitted,
               decoration: InputDecoration(
@@ -48,40 +51,7 @@ class CustomSearchBar extends StatelessWidget {
               style: AppTypography.bodyLarge,
             ),
           ),
-          // Location Button
-          Container(
-            width: 40,
-            height: 40,
-            margin: const EdgeInsets.only(right: AppSpacing.xs),
-            decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(AppRadius.md),
-            ),
-            child: IconButton(
-              onPressed: () {
-                // TODO: Open location filter
-              },
-              icon: Icon(Icons.location_on, color: AppColors.primary, size: 20),
-              padding: EdgeInsets.zero,
-            ),
-          ),
-          // Filter Button
-          Container(
-            width: 40,
-            height: 40,
-            margin: const EdgeInsets.only(right: AppSpacing.xs),
-            decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(AppRadius.md),
-            ),
-            child: IconButton(
-              onPressed: () {
-                // TODO: Open filter modal
-              },
-              icon: Icon(Icons.tune, color: AppColors.primary, size: 20),
-              padding: EdgeInsets.zero,
-            ),
-          ),
+          const SizedBox(width: AppSpacing.md),
         ],
       ),
     );

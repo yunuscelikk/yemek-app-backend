@@ -10,19 +10,16 @@ import '../../../location/presentation/pages/location_permission_page.dart';
 import '../../../main/presentation/pages/main_scaffold.dart';
 import '../../data/datasources/auth_remote_datasource.dart';
 import '../../data/repositories/auth_repository_impl.dart';
-import '../../domain/user_type.dart';
 import '../bloc/auth_bloc.dart';
 import 'register_page.dart';
 import 'forgot_password_page.dart';
 
 class LoginPage extends StatelessWidget {
-  final UserType userType;
-
-  const LoginPage({super.key, this.userType = UserType.customer});
+  const LoginPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final tokenStorage = SharedPrefsTokenStorage();
+    final tokenStorage = createDefaultTokenStorage();
     return BlocProvider(
       create: (context) => AuthBloc(
         authRepository: AuthRepositoryImpl(
@@ -32,15 +29,13 @@ class LoginPage extends StatelessWidget {
           tokenStorage: tokenStorage,
         ),
       ),
-      child: LoginView(userType: userType),
+      child: const LoginView(),
     );
   }
 }
 
 class LoginView extends StatefulWidget {
-  final UserType userType;
-
-  const LoginView({super.key, required this.userType});
+  const LoginView({super.key});
 
   @override
   State<LoginView> createState() => _LoginViewState();
@@ -156,43 +151,9 @@ class _LoginViewState extends State<LoginView> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // User type chip
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.md,
-                        vertical: AppSpacing.xs,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(AppRadius.full),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            widget.userType == UserType.customer
-                                ? Icons.person_outline_rounded
-                                : Icons.storefront_outlined,
-                            size: 16,
-                            color: AppColors.primary,
-                          ),
-                          const SizedBox(width: AppSpacing.xs),
-                          Text(
-                            widget.userType.displayName,
-                            style: AppTypography.bodySmall.copyWith(
-                              color: AppColors.primary,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    SizedBox(height: responsive.padding(AppSpacing.md)),
-
                     // Title
                     Text(
-                      widget.userType.loginTitle,
+                      'Hoş Geldiniz!',
                       style: AppTypography.h2.copyWith(
                         color: AppColors.textPrimary,
                         fontWeight: FontWeight.bold,
@@ -203,7 +164,7 @@ class _LoginViewState extends State<LoginView> {
 
                     // Subtitle
                     Text(
-                      widget.userType.loginSubtitle,
+                      'Hesabınıza giriş yaparak devam edin',
                       style: AppTypography.bodyMedium.copyWith(
                         color: AppColors.textSecondary,
                       ),
@@ -259,8 +220,8 @@ class _LoginViewState extends State<LoginView> {
                         if (value == null || value.isEmpty) {
                           return 'Şifre gerekli';
                         }
-                        if (value.length < 6) {
-                          return 'Şifre en az 6 karakter olmalı';
+                        if (value.length < 8) {
+                          return 'Şifre en az 8 karakter olmalı';
                         }
                         return null;
                       },
@@ -329,8 +290,8 @@ class _LoginViewState extends State<LoginView> {
 
                     const SizedBox(height: AppSpacing.xl),
 
-                    // Divider & Google Sign-In (only for customers)
-                    if (widget.userType != UserType.businessOwner) ...[
+                    // Divider & Google Sign-In
+                    ...[
                       Row(
                         children: [
                           const Expanded(
@@ -364,8 +325,8 @@ class _LoginViewState extends State<LoginView> {
                               ? null
                               : () {
                                   context.read<AuthBloc>().add(
-                                    GoogleSignInRequested(
-                                      role: widget.userType.role,
+                                    const GoogleSignInRequested(
+                                      role: 'customer',
                                     ),
                                   );
                                 },
@@ -404,8 +365,7 @@ class _LoginViewState extends State<LoginView> {
                           onPressed: () {
                             Navigator.of(context).push(
                               MaterialPageRoute(
-                                builder: (context) =>
-                                    RegisterPage(userType: widget.userType),
+                                builder: (context) => const RegisterPage(),
                               ),
                             );
                           },

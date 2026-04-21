@@ -6,18 +6,15 @@ import '../../../../core/storage/token_storage.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../data/datasources/auth_remote_datasource.dart';
 import '../../data/repositories/auth_repository_impl.dart';
-import '../../domain/user_type.dart';
 import '../bloc/auth_bloc.dart';
 import 'email_verification_page.dart';
 
 class RegisterPage extends StatelessWidget {
-  final UserType userType;
-
-  const RegisterPage({super.key, this.userType = UserType.customer});
+  const RegisterPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final tokenStorage = SharedPrefsTokenStorage();
+    final tokenStorage = createDefaultTokenStorage();
     return BlocProvider(
       create: (context) => AuthBloc(
         authRepository: AuthRepositoryImpl(
@@ -27,15 +24,13 @@ class RegisterPage extends StatelessWidget {
           tokenStorage: tokenStorage,
         ),
       ),
-      child: RegisterView(userType: userType),
+      child: const RegisterView(),
     );
   }
 }
 
 class RegisterView extends StatefulWidget {
-  final UserType userType;
-
-  const RegisterView({super.key, required this.userType});
+  const RegisterView({super.key});
 
   @override
   State<RegisterView> createState() => _RegisterViewState();
@@ -71,7 +66,7 @@ class _RegisterViewState extends State<RegisterView> {
           phone: _phoneController.text.trim().isEmpty
               ? null
               : _phoneController.text.trim(),
-          role: widget.userType.role,
+          role: 'customer',
         ),
       );
     }
@@ -121,43 +116,9 @@ class _RegisterViewState extends State<RegisterView> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // User type chip
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.md,
-                        vertical: AppSpacing.xs,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(AppRadius.full),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            widget.userType == UserType.customer
-                                ? Icons.person_outline_rounded
-                                : Icons.storefront_outlined,
-                            size: 16,
-                            color: AppColors.primary,
-                          ),
-                          const SizedBox(width: AppSpacing.xs),
-                          Text(
-                            widget.userType.displayName,
-                            style: AppTypography.bodySmall.copyWith(
-                              color: AppColors.primary,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    SizedBox(height: responsive.padding(AppSpacing.md)),
-
                     // Title
                     Text(
-                      widget.userType.registerTitle,
+                      'Hesap Oluştur',
                       style: AppTypography.h2.copyWith(
                         color: AppColors.textPrimary,
                         fontWeight: FontWeight.bold,
@@ -167,7 +128,7 @@ class _RegisterViewState extends State<RegisterView> {
                     SizedBox(height: responsive.padding(AppSpacing.sm)),
 
                     Text(
-                      widget.userType.registerSubtitle,
+                      'Bilgilerinizi girerek kayıt olun',
                       style: AppTypography.bodyMedium.copyWith(
                         color: AppColors.textSecondary,
                       ),
@@ -251,7 +212,7 @@ class _RegisterViewState extends State<RegisterView> {
                       obscureText: _obscurePassword,
                       enabled: !isLoading,
                       decoration: InputDecoration(
-                        hintText: 'Şifreniz (en az 6 karakter)',
+                        hintText: 'Şifreniz (en az 8 karakter)',
                         prefixIcon: const Icon(Icons.lock_outline),
                         suffixIcon: IconButton(
                           icon: Icon(
@@ -271,8 +232,8 @@ class _RegisterViewState extends State<RegisterView> {
                         if (value == null || value.isEmpty) {
                           return 'Şifre gerekli';
                         }
-                        if (value.length < 6) {
-                          return 'Şifre en az 6 karakter olmalı';
+                        if (value.length < 8) {
+                          return 'Şifre en az 8 karakter olmalı';
                         }
                         return null;
                       },

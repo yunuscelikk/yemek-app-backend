@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../config/theme.dart';
+import '../../../../shared/widgets/app_cached_image.dart';
 import '../../data/models/business_model.dart';
 
 class BusinessCard extends StatelessWidget {
@@ -41,23 +42,15 @@ class BusinessCard extends StatelessWidget {
                       width: 80,
                       height: 80,
                       color: AppColors.divider,
-                      child: business.imageUrl != null
-                          ? Image.network(
-                              business.imageUrl!,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return const Icon(
-                                  Icons.store,
-                                  size: 40,
-                                  color: AppColors.textHint,
-                                );
-                              },
-                            )
-                          : const Icon(
-                              Icons.store,
-                              size: 40,
-                              color: AppColors.textHint,
-                            ),
+                      child: AppCachedImage(
+                        imageUrl: business.imageUrl,
+                        fit: BoxFit.cover,
+                        placeholder: const Icon(
+                          Icons.store,
+                          size: 40,
+                          color: AppColors.textHint,
+                        ),
+                      ),
                     ),
                   ),
 

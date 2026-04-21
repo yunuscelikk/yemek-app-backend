@@ -1,4 +1,6 @@
-class FavoriteModel {
+import 'package:equatable/equatable.dart';
+
+class FavoriteModel extends Equatable {
   final String id;
   final String businessId;
   final String businessName;
@@ -29,7 +31,8 @@ class FavoriteModel {
 
     return FavoriteModel(
       id: json['id'] as String? ?? '',
-      businessId: business['id'] as String? ?? json['businessId'] as String? ?? '',
+      businessId:
+          business['id'] as String? ?? json['businessId'] as String? ?? '',
       businessName: business['name'] as String? ?? '',
       address: business['address'] as String? ?? '',
       city: business['city'] as String? ?? '',
@@ -42,6 +45,20 @@ class FavoriteModel {
           : DateTime.now(),
     );
   }
+
+  @override
+  List<Object?> get props => [
+    id,
+    businessId,
+    businessName,
+    address,
+    city,
+    district,
+    imageUrl,
+    rating,
+    categoryName,
+    createdAt,
+  ];
 
   String get fullAddress {
     if (district.isNotEmpty && city.isNotEmpty) {
@@ -58,7 +75,7 @@ class FavoriteModel {
   }
 }
 
-class FavoritesResponse {
+class FavoritesResponse extends Equatable {
   final List<FavoriteModel> favorites;
   final int total;
   final int page;
@@ -70,6 +87,9 @@ class FavoritesResponse {
     required this.page,
     required this.totalPages,
   });
+
+  @override
+  List<Object?> get props => [favorites, total, page, totalPages];
 
   factory FavoritesResponse.fromJson(Map<String, dynamic> json) {
     final data = json['data'] as List<dynamic>? ?? [];

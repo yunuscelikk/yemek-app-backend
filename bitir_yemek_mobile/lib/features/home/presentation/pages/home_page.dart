@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../config/theme.dart';
 import '../../../../core/network/dio_client.dart';
+import '../../../../core/storage/token_storage.dart';
 import '../../../../shared/widgets/shimmer_loader.dart';
 import '../../data/datasources/businesses_remote_datasource.dart';
 import '../../data/models/category_model.dart';
@@ -13,6 +14,7 @@ import '../widgets/location_header.dart';
 import '../widgets/package_card.dart';
 import '../../../favorites/presentation/bloc/favorites_bloc.dart';
 import 'package_detail_page.dart';
+import 'all_packages_page.dart';
 
 class HomePage extends StatelessWidget {
   final double latitude;
@@ -22,13 +24,15 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokenStorage = createDefaultTokenStorage();
+    final dioClient = DioClient(tokenStorage: tokenStorage);
     return MultiBlocProvider(
       providers: [
         BlocProvider(
           create: (context) => PackagesBloc(
             repository: BusinessesRepositoryImpl(
               remoteDataSource: BusinessesRemoteDataSource(
-                dioClient: DioClient(),
+                dioClient: dioClient,
               ),
             ),
           )..add(LoadNearbyPackages(latitude: latitude, longitude: longitude)),
@@ -37,7 +41,7 @@ class HomePage extends StatelessWidget {
           create: (context) => HomeBloc(
             repository: BusinessesRepositoryImpl(
               remoteDataSource: BusinessesRemoteDataSource(
-                dioClient: DioClient(),
+                dioClient: dioClient,
               ),
             ),
           )..add(LoadCategories()),
@@ -137,6 +141,9 @@ class _HomeViewState extends State<HomeView> {
 
             // Category Chips
             BlocBuilder<HomeBloc, HomeState>(
+              buildWhen: (previous, current) =>
+                  previous.runtimeType != current.runtimeType ||
+                  current is HomeLoaded,
               builder: (context, state) {
                 if (state is HomeLoaded) {
                   _categories = state.categories;
@@ -260,12 +267,20 @@ class _HomeViewState extends State<HomeView> {
                     }
 
                     return BlocBuilder<FavoritesBloc, FavoritesState>(
+                      buildWhen: (previous, current) =>
+                          current is FavoritesLoaded ||
+                          current is FavoritesLoadingMore ||
+                          current is FavoritesInitial,
                       builder: (context, favState) {
                         final favIds = favState is FavoritesLoaded
-                            ? favState.favorites.map((f) => f.businessId).toSet()
+                            ? favState.favorites
+                                  .map((f) => f.businessId)
+                                  .toSet()
                             : favState is FavoritesLoadingMore
-                                ? favState.favorites.map((f) => f.businessId).toSet()
-                                : <String>{};
+                            ? favState.favorites
+                                  .map((f) => f.businessId)
+                                  .toSet()
+                            : <String>{};
 
                         return RefreshIndicator(
                           onRefresh: () async {
@@ -302,14 +317,29 @@ class _HomeViewState extends State<HomeView> {
                                       ),
                                       TextButton(
                                         onPressed: () {
-                                          // TODO: Navigate to all packages
+                                          final favBloc = context
+                                              .read<FavoritesBloc>();
+                                          Navigator.of(context).push(
+                                            MaterialPageRoute(
+                                              builder: (_) => BlocProvider.value(
+                                                value: favBloc,
+                                                child: AllPackagesPage(
+                                                  title:
+                                                      'Yakınınızdaki Popüler Seçimler',
+                                                  latitude: widget.latitude,
+                                                  longitude: widget.longitude,
+                                                ),
+                                              ),
+                                            ),
+                                          );
                                         },
                                         child: Text(
                                           'Hepsini Gör',
-                                          style: AppTypography.bodyMedium.copyWith(
-                                            color: AppColors.primary,
-                                            fontWeight: FontWeight.w600,
-                                          ),
+                                          style: AppTypography.bodyMedium
+                                              .copyWith(
+                                                color: AppColors.primary,
+                                                fontWeight: FontWeight.w600,
+                                              ),
                                         ),
                                       ),
                                     ],
@@ -337,22 +367,30 @@ class _HomeViewState extends State<HomeView> {
                                         child: PackageCard(
                                           package: packages[index],
                                           isHorizontal: true,
-                                          isFavorite: favIds.contains(packages[index].business.id),
+                                          isFavorite: favIds.contains(
+                                            packages[index].business.id,
+                                          ),
                                           onFavoriteTap: () {
                                             context.read<FavoritesBloc>().add(
-                                              ToggleFavorite(businessId: packages[index].business.id),
+                                              ToggleFavorite(
+                                                businessId:
+                                                    packages[index].business.id,
+                                              ),
                                             );
                                           },
                                           onTap: () {
-                                            final favBloc = context.read<FavoritesBloc>();
+                                            final favBloc = context
+                                                .read<FavoritesBloc>();
                                             Navigator.of(context).push(
                                               MaterialPageRoute(
-                                                builder: (_) => BlocProvider.value(
-                                                  value: favBloc,
-                                                  child: PackageDetailPage(
-                                                    package: packages[index],
-                                                  ),
-                                                ),
+                                                builder: (_) =>
+                                                    BlocProvider.value(
+                                                      value: favBloc,
+                                                      child: PackageDetailPage(
+                                                        package:
+                                                            packages[index],
+                                                      ),
+                                                    ),
                                               ),
                                             );
                                           },
@@ -385,14 +423,30 @@ class _HomeViewState extends State<HomeView> {
                                       ),
                                       TextButton(
                                         onPressed: () {
-                                          // TODO: Navigate to all packages
+                                          final favBloc = context
+                                              .read<FavoritesBloc>();
+                                          Navigator.of(context).push(
+                                            MaterialPageRoute(
+                                              builder: (_) =>
+                                                  BlocProvider.value(
+                                                    value: favBloc,
+                                                    child: AllPackagesPage(
+                                                      title: 'Yerel En İyiler',
+                                                      latitude: widget.latitude,
+                                                      longitude:
+                                                          widget.longitude,
+                                                    ),
+                                                  ),
+                                            ),
+                                          );
                                         },
                                         child: Text(
                                           'Hepsini Gör',
-                                          style: AppTypography.bodyMedium.copyWith(
-                                            color: AppColors.primary,
-                                            fontWeight: FontWeight.w600,
-                                          ),
+                                          style: AppTypography.bodyMedium
+                                              .copyWith(
+                                                color: AppColors.primary,
+                                                fontWeight: FontWeight.w600,
+                                              ),
                                         ),
                                       ),
                                     ],
@@ -427,22 +481,29 @@ class _HomeViewState extends State<HomeView> {
                                       child: PackageCard(
                                         package: packages[index],
                                         isHorizontal: false,
-                                        isFavorite: favIds.contains(packages[index].business.id),
+                                        isFavorite: favIds.contains(
+                                          packages[index].business.id,
+                                        ),
                                         onFavoriteTap: () {
                                           context.read<FavoritesBloc>().add(
-                                            ToggleFavorite(businessId: packages[index].business.id),
+                                            ToggleFavorite(
+                                              businessId:
+                                                  packages[index].business.id,
+                                            ),
                                           );
                                         },
                                         onTap: () {
-                                          final favBloc = context.read<FavoritesBloc>();
+                                          final favBloc = context
+                                              .read<FavoritesBloc>();
                                           Navigator.of(context).push(
                                             MaterialPageRoute(
-                                              builder: (_) => BlocProvider.value(
-                                                value: favBloc,
-                                                child: PackageDetailPage(
-                                                  package: packages[index],
-                                                ),
-                                              ),
+                                              builder: (_) =>
+                                                  BlocProvider.value(
+                                                    value: favBloc,
+                                                    child: PackageDetailPage(
+                                                      package: packages[index],
+                                                    ),
+                                                  ),
                                             ),
                                           );
                                         },

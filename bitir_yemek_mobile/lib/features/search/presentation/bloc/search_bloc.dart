@@ -1,10 +1,24 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:bloc_concurrency/bloc_concurrency.dart';
+import 'package:stream_transform/stream_transform.dart';
 import '../../../home/data/models/package_model.dart';
 import '../../../home/domain/repositories/businesses_repository.dart';
 
 part 'search_event.dart';
 part 'search_state.dart';
+
+/// Debounce duration for search queries — prevents firing a request on
+/// every keystroke; waits until the user pauses typing for 400ms.
+const _kSearchDebounce = Duration(milliseconds: 400);
+
+/// Combined transformer: debounce + restartable.
+/// Any in-flight search is cancelled when a new query arrives after the
+/// debounce window, keeping only the latest query active.
+EventTransformer<E> _debouncedRestartable<E>(Duration duration) {
+  return (events, mapper) =>
+      restartable<E>().call(events.debounce(duration), mapper);
+}
 
 class SearchBloc extends Bloc<SearchEvent, SearchState> {
   final BusinessesRepository _repository;
@@ -12,7 +26,12 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
   SearchBloc({required BusinessesRepository repository})
     : _repository = repository,
       super(SearchInitial()) {
-    on<SearchPackages>(_onSearchPackages);
+    // SearchPackages uses debounced+restartable: previous request is cancelled
+    // if a new search query arrives within the debounce window.
+    on<SearchPackages>(
+      _onSearchPackages,
+      transformer: _debouncedRestartable(_kSearchDebounce),
+    );
     on<LoadMoreSearchResults>(_onLoadMoreSearchResults);
     on<UpdateSortOrder>(_onUpdateSortOrder);
     on<UpdateSearchFilters>(_onUpdateSearchFilters);
@@ -34,7 +53,19 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
       );
 
       if (result.isSuccess) {
-        final sortedPackages = _sortPackages(result.packages!, event.sortOrder);
+        var packages = result.packages!;
+        // Cache the lowercased query once to avoid repeated allocations
+        // inside the filter loop.
+        if (event.query != null && event.query!.isNotEmpty) {
+          final query = event.query!.toLowerCase();
+          packages = packages.where((p) {
+            return p.title.toLowerCase().contains(query) ||
+                p.business.name.toLowerCase().contains(query) ||
+                (p.description?.toLowerCase().contains(query) ?? false) ||
+                p.business.category.name.toLowerCase().contains(query);
+          }).toList();
+        }
+        final sortedPackages = _sortPackages(packages, event.sortOrder);
         emit(
           SearchLoaded(
             packages: sortedPackages,

@@ -42,7 +42,7 @@ class MainScaffold extends StatefulWidget {
 
 class _MainScaffoldState extends State<MainScaffold> {
   late int _currentIndex;
-  late final SharedPrefsTokenStorage _tokenStorage;
+  late final TokenStorage _tokenStorage;
   late final DioClient _dioClient;
 
   @override
@@ -50,7 +50,7 @@ class _MainScaffoldState extends State<MainScaffold> {
     super.initState();
     _currentIndex = widget.initialIndex;
     // Create shared instances for auth interceptor
-    _tokenStorage = SharedPrefsTokenStorage();
+    _tokenStorage = createDefaultTokenStorage();
     _dioClient = DioClient(tokenStorage: _tokenStorage);
   }
 
@@ -103,7 +103,7 @@ class _MainScaffoldState extends State<MainScaffold> {
                   tokenStorage: _tokenStorage,
                 ),
               ),
-            )..add(const LoadOrders());
+            );
           },
         ),
         // Favorites Bloc
@@ -116,7 +116,7 @@ class _MainScaffoldState extends State<MainScaffold> {
                   tokenStorage: _tokenStorage,
                 ),
               ),
-            )..add(const LoadFavorites());
+            );
           },
         ),
         // Profile Bloc

@@ -15,7 +15,7 @@ class ResetPasswordPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tokenStorage = SharedPrefsTokenStorage();
+    final tokenStorage = createDefaultTokenStorage();
     return BlocProvider(
       create: (context) => AuthBloc(
         authRepository: AuthRepositoryImpl(

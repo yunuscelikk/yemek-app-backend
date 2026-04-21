@@ -1,4 +1,6 @@
-class OwnerPackageModel {
+import 'package:equatable/equatable.dart';
+
+class OwnerPackageModel extends Equatable {
   final String id;
   final String title;
   final String? description;
@@ -30,6 +32,24 @@ class OwnerPackageModel {
     required this.soldQuantity,
     required this.totalRevenue,
   });
+
+  @override
+  List<Object?> get props => [
+    id,
+    title,
+    description,
+    originalPrice,
+    discountedPrice,
+    quantity,
+    remainingQuantity,
+    pickupStart,
+    pickupEnd,
+    pickupDate,
+    imageUrl,
+    isActive,
+    soldQuantity,
+    totalRevenue,
+  ];
 
   factory OwnerPackageModel.fromJson(Map<String, dynamic> json) {
     return OwnerPackageModel(

@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../../../config/theme.dart';
+import '../../../../shared/widgets/app_cached_image.dart';
 import '../../../home/data/models/business_model.dart';
 
 class BusinessMapCard extends StatelessWidget {
@@ -183,14 +184,11 @@ class BusinessMapCard extends StatelessWidget {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(AppRadius.md),
-        child: business.imageUrl != null && business.imageUrl!.isNotEmpty
-            ? Image.network(
-                business.imageUrl!,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) =>
-                    _buildPlaceholder(),
-              )
-            : _buildPlaceholder(),
+        child: AppCachedImage(
+          imageUrl: business.imageUrl,
+          fit: BoxFit.cover,
+          placeholder: _buildPlaceholder(),
+        ),
       ),
     );
   }

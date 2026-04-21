@@ -1,4 +1,5 @@
 const Redis = require('ioredis');
+const logger = require('./logger');
 
 let redis = null;
 
@@ -16,10 +17,12 @@ const getRedis = () => {
         lazyConnect: true,
       });
 
-      redis.on('error', () => {
+      redis.on('error', (err) => {
+        logger.warn('Redis connection error, caching disabled', { error: err.message });
         redis = null;
       });
-    } catch {
+    } catch (err) {
+      logger.warn('Redis initialization failed', { error: err.message });
       redis = null;
     }
   }

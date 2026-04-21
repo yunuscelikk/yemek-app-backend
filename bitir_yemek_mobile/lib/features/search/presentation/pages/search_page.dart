@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../config/theme.dart';
 import '../../../../core/network/dio_client.dart';
+import '../../../../core/storage/token_storage.dart';
 import '../../../../shared/widgets/shimmer_loader.dart';
 import '../../../home/data/datasources/businesses_remote_datasource.dart';
 import '../../../home/data/repositories/businesses_repository_impl.dart';
@@ -11,7 +12,6 @@ import '../../../favorites/presentation/bloc/favorites_bloc.dart';
 import '../bloc/search_bloc.dart';
 import '../widgets/search_bar.dart';
 import '../widgets/sort_dropdown.dart';
-import '../widgets/view_toggle.dart';
 
 class SearchPage extends StatelessWidget {
   final double latitude;
@@ -28,7 +28,9 @@ class SearchPage extends StatelessWidget {
     return BlocProvider(
       create: (context) => SearchBloc(
         repository: BusinessesRepositoryImpl(
-          remoteDataSource: BusinessesRemoteDataSource(dioClient: DioClient()),
+          remoteDataSource: BusinessesRemoteDataSource(
+            dioClient: DioClient(tokenStorage: createDefaultTokenStorage()),
+          ),
         ),
       )..add(SearchPackages(latitude: latitude, longitude: longitude)),
       child: SearchView(latitude: latitude, longitude: longitude),
@@ -52,8 +54,7 @@ class SearchView extends StatefulWidget {
 
 class _SearchViewState extends State<SearchView> {
   final ScrollController _scrollController = ScrollController();
-  bool _isListView = true;
-
+  final TextEditingController _searchController = TextEditingController();
   @override
   void initState() {
     super.initState();
@@ -63,6 +64,7 @@ class _SearchViewState extends State<SearchView> {
   @override
   void dispose() {
     _scrollController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -98,30 +100,32 @@ class _SearchViewState extends State<SearchView> {
                 children: [
                   // Search Bar
                   CustomSearchBar(
+                    controller: _searchController,
                     onChanged: (value) {
+                      context.read<SearchBloc>().add(
+                        SearchPackages(
+                          latitude: widget.latitude,
+                          longitude: widget.longitude,
+                          query: value.trim().isEmpty ? null : value.trim(),
+                        ),
+                      );
                     },
                     onSubmitted: (value) {
-                      // TODO: Implement search query
+                      context.read<SearchBloc>().add(
+                        SearchPackages(
+                          latitude: widget.latitude,
+                          longitude: widget.longitude,
+                          query: value.trim().isEmpty ? null : value.trim(),
+                        ),
+                      );
                     },
                   ),
                   const SizedBox(height: AppSpacing.md),
 
-                  // View Toggle & Sort
+                  // Sort
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      // Liste/Harita Toggle
-                      Expanded(
-                        child: ViewToggle(
-                          isListView: _isListView,
-                          onToggle: (isList) {
-                            setState(() {
-                              _isListView = isList;
-                            });
-                          },
-                        ),
-                      ),
-                      const SizedBox(width: AppSpacing.md),
-                      // Sort Dropdown
                       BlocBuilder<SearchBloc, SearchState>(
                         builder: (context, state) {
                           if (state is SearchLoaded) {
@@ -178,10 +182,14 @@ class _SearchViewState extends State<SearchView> {
                     return BlocBuilder<FavoritesBloc, FavoritesState>(
                       builder: (context, favState) {
                         final favIds = favState is FavoritesLoaded
-                            ? favState.favorites.map((f) => f.businessId).toSet()
+                            ? favState.favorites
+                                  .map((f) => f.businessId)
+                                  .toSet()
                             : favState is FavoritesLoadingMore
-                                ? favState.favorites.map((f) => f.businessId).toSet()
-                                : <String>{};
+                            ? favState.favorites
+                                  .map((f) => f.businessId)
+                                  .toSet()
+                            : <String>{};
 
                         return RefreshIndicator(
                           onRefresh: () async {
@@ -198,7 +206,8 @@ class _SearchViewState extends State<SearchView> {
                             padding: const EdgeInsets.symmetric(
                               horizontal: AppSpacing.screenPadding,
                             ),
-                            itemCount: packages.length + (isLoadingMore ? 1 : 0),
+                            itemCount:
+                                packages.length + (isLoadingMore ? 1 : 0),
                             itemBuilder: (context, index) {
                               if (index >= packages.length) {
                                 return const Padding(
@@ -218,14 +227,19 @@ class _SearchViewState extends State<SearchView> {
                                 child: PackageCard(
                                   package: packages[index],
                                   isHorizontal: false,
-                                  isFavorite: favIds.contains(packages[index].business.id),
+                                  isFavorite: favIds.contains(
+                                    packages[index].business.id,
+                                  ),
                                   onFavoriteTap: () {
                                     context.read<FavoritesBloc>().add(
-                                      ToggleFavorite(businessId: packages[index].business.id),
+                                      ToggleFavorite(
+                                        businessId: packages[index].business.id,
+                                      ),
                                     );
                                   },
                                   onTap: () {
-                                    final favBloc = context.read<FavoritesBloc>();
+                                    final favBloc = context
+                                        .read<FavoritesBloc>();
                                     Navigator.of(context).push(
                                       MaterialPageRoute(
                                         builder: (_) => BlocProvider.value(

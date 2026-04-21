@@ -5,13 +5,17 @@ import '../models/category_model.dart';
 import '../models/package_model.dart';
 import '../models/reservation_model.dart';
 import '../../domain/repositories/businesses_repository.dart';
+import '../../../../core/services/cache_service.dart';
 
 class BusinessesRepositoryImpl implements BusinessesRepository {
   final BusinessesRemoteDataSource _remoteDataSource;
+  final CacheService _cache;
 
   BusinessesRepositoryImpl({
     required BusinessesRemoteDataSource remoteDataSource,
-  }) : _remoteDataSource = remoteDataSource;
+    CacheService? cacheService,
+  }) : _remoteDataSource = remoteDataSource,
+       _cache = cacheService ?? CacheService();
 
   @override
   Future<BusinessesResult> getNearbyBusinesses({
@@ -21,6 +25,18 @@ class BusinessesRepositoryImpl implements BusinessesRepository {
     int page = 1,
     int limit = 10,
   }) async {
+    final cacheKey =
+        'businesses:nearby:${latitude.toStringAsFixed(4)}:${longitude.toStringAsFixed(4)}:r$radius:p$page:l$limit';
+
+    final cached = _cache.get<Map<String, dynamic>>(cacheKey);
+    if (cached != null) {
+      final businessesResponse = BusinessesResponse.fromJson(cached);
+      return BusinessesResult.success(
+        businesses: businessesResponse.data,
+        pagination: businessesResponse.pagination,
+      );
+    }
+
     try {
       final response = await _remoteDataSource.getNearbyBusinesses(
         latitude: latitude,
@@ -30,6 +46,7 @@ class BusinessesRepositoryImpl implements BusinessesRepository {
         limit: limit,
       );
 
+      _cache.set(cacheKey, response);
       final businessesResponse = BusinessesResponse.fromJson(response);
 
       return BusinessesResult.success(
@@ -50,6 +67,18 @@ class BusinessesRepositoryImpl implements BusinessesRepository {
     int page = 1,
     int limit = 10,
   }) async {
+    final cacheKey =
+        'businesses:list:${city ?? ''}:${district ?? ''}:p$page:l$limit';
+
+    final cached = _cache.get<Map<String, dynamic>>(cacheKey);
+    if (cached != null) {
+      final businessesResponse = BusinessesResponse.fromJson(cached);
+      return BusinessesResult.success(
+        businesses: businessesResponse.data,
+        pagination: businessesResponse.pagination,
+      );
+    }
+
     try {
       final response = await _remoteDataSource.getBusinesses(
         city: city,
@@ -58,6 +87,7 @@ class BusinessesRepositoryImpl implements BusinessesRepository {
         limit: limit,
       );
 
+      _cache.set(cacheKey, response);
       final businessesResponse = BusinessesResponse.fromJson(response);
 
       return BusinessesResult.success(
@@ -77,6 +107,17 @@ class BusinessesRepositoryImpl implements BusinessesRepository {
     int page = 1,
     int limit = 10,
   }) async {
+    final cacheKey = "packages:list:cat${categoryId ?? ''}:p$page:l$limit";
+
+    final cached = _cache.get<Map<String, dynamic>>(cacheKey);
+    if (cached != null) {
+      final packagesResponse = PackagesResponse.fromJson(cached);
+      return PackagesResult.success(
+        packages: packagesResponse.data,
+        pagination: packagesResponse.pagination,
+      );
+    }
+
     try {
       final response = await _remoteDataSource.getPackages(
         categoryId: categoryId,
@@ -84,6 +125,7 @@ class BusinessesRepositoryImpl implements BusinessesRepository {
         limit: limit,
       );
 
+      _cache.set(cacheKey, response);
       final packagesResponse = PackagesResponse.fromJson(response);
 
       return PackagesResult.success(
@@ -105,6 +147,18 @@ class BusinessesRepositoryImpl implements BusinessesRepository {
     int page = 1,
     int limit = 10,
   }) async {
+    final cacheKey =
+        'packages:nearby:${latitude.toStringAsFixed(4)}:${longitude.toStringAsFixed(4)}:r$radius:p$page:l$limit';
+
+    final cached = _cache.get<Map<String, dynamic>>(cacheKey);
+    if (cached != null) {
+      final packagesResponse = PackagesResponse.fromJson(cached);
+      return PackagesResult.success(
+        packages: packagesResponse.data,
+        pagination: packagesResponse.pagination,
+      );
+    }
+
     try {
       final response = await _remoteDataSource.getNearbyPackages(
         latitude: latitude,
@@ -114,6 +168,7 @@ class BusinessesRepositoryImpl implements BusinessesRepository {
         limit: limit,
       );
 
+      _cache.set(cacheKey, response);
       final packagesResponse = PackagesResponse.fromJson(response);
 
       return PackagesResult.success(
@@ -129,6 +184,19 @@ class BusinessesRepositoryImpl implements BusinessesRepository {
 
   @override
   Future<CategoriesResult> getCategories() async {
+    const cacheKey = 'categories:all';
+
+    final cached = _cache.get<Map<String, dynamic>>(cacheKey);
+    if (cached != null) {
+      final categoriesData = cached['categories'] ?? cached['data'];
+      if (categoriesData != null) {
+        final categories = (categoriesData as List<dynamic>)
+            .map((e) => CategoryModel.fromJson(e as Map<String, dynamic>))
+            .toList();
+        return CategoriesResult.success(categories: categories);
+      }
+    }
+
     try {
       final response = await _remoteDataSource.getCategories();
 
@@ -137,6 +205,9 @@ class BusinessesRepositoryImpl implements BusinessesRepository {
       if (categoriesData == null) {
         return CategoriesResult.failure('Kategori verisi bulunamadı');
       }
+
+      // Cache categories for a longer TTL — they change very rarely.
+      _cache.set(cacheKey, response, ttl: const Duration(hours: 1));
 
       final categories = (categoriesData as List<dynamic>)
           .map((e) => CategoryModel.fromJson(e as Map<String, dynamic>))
@@ -167,6 +238,10 @@ class BusinessesRepositoryImpl implements BusinessesRepository {
       if (orderData == null) {
         return ReservationResult.failure('Rezervasyon olusturulamadi');
       }
+
+      // A new order has been placed — stock levels have changed, so stale
+      // package cache entries must be evicted.
+      _cache.invalidatePattern('packages:');
 
       final reservation = ReservationModel.fromJson(orderData);
       return ReservationResult.success(

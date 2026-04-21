@@ -34,6 +34,9 @@ class _DashboardPageState extends State<DashboardPage>
     return Scaffold(
       backgroundColor: AppColors.background,
       body: BlocBuilder<DashboardBloc, DashboardState>(
+        buildWhen: (previous, current) =>
+            previous.runtimeType != current.runtimeType ||
+            current is DashboardLoaded,
         builder: (context, state) {
           return RefreshIndicator(
             color: AppColors.primary,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../config/theme.dart';
+import '../../../../shared/widgets/app_cached_image.dart';
 import '../../data/models/package_model.dart';
 
 class PackageCard extends StatelessWidget {
@@ -60,15 +61,11 @@ class PackageCard extends StatelessWidget {
                   height: 150,
                   width: double.infinity,
                   color: AppColors.divider,
-                  child: package.imageUrl != null
-                      ? Image.network(
-                          package.imageUrl!,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return _buildPlaceholderImage();
-                          },
-                        )
-                      : _buildPlaceholderImage(),
+                  child: AppCachedImage(
+                    imageUrl: package.imageUrl,
+                    fit: BoxFit.cover,
+                    placeholder: _buildPlaceholderImage(),
+                  ),
                 ),
                 // Discount Badge
                 Positioned(
@@ -292,15 +289,11 @@ class PackageCard extends StatelessWidget {
                   width: 120,
                   height: 120,
                   color: AppColors.divider,
-                  child: package.imageUrl != null
-                      ? Image.network(
-                          package.imageUrl!,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return _buildPlaceholderImage();
-                          },
-                        )
-                      : _buildPlaceholderImage(),
+                  child: AppCachedImage(
+                    imageUrl: package.imageUrl,
+                    fit: BoxFit.cover,
+                    placeholder: _buildPlaceholderImage(),
+                  ),
                 ),
                 // Discount Badge
                 Positioned(

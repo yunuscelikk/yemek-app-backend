@@ -1,4 +1,6 @@
-class DailyStatModel {
+import 'package:equatable/equatable.dart';
+
+class DailyStatModel extends Equatable {
   final String date;
   final int orders;
   final double revenue;
@@ -8,6 +10,9 @@ class DailyStatModel {
     required this.orders,
     required this.revenue,
   });
+
+  @override
+  List<Object?> get props => [date, orders, revenue];
 
   factory DailyStatModel.fromJson(Map<String, dynamic> json) {
     return DailyStatModel(
@@ -20,7 +25,7 @@ class DailyStatModel {
   }
 }
 
-class DashboardStatsModel {
+class DashboardStatsModel extends Equatable {
   final int totalPackages;
   final int activePackages;
   final int todayOrders;
@@ -46,6 +51,21 @@ class DashboardStatsModel {
     required this.monthlyRevenue,
     required this.dailyStats,
   });
+
+  @override
+  List<Object?> get props => [
+    totalPackages,
+    activePackages,
+    todayOrders,
+    todayRevenue,
+    pendingOrders,
+    totalOrders,
+    totalRevenue,
+    averageRating,
+    weeklyRevenue,
+    monthlyRevenue,
+    dailyStats,
+  ];
 
   factory DashboardStatsModel.fromJson(Map<String, dynamic> json) {
     final stats = json['stats'] as Map<String, dynamic>;

@@ -1,4 +1,6 @@
-class ReservationModel {
+import 'package:equatable/equatable.dart';
+
+class ReservationModel extends Equatable {
   final String id;
   final String packageId;
   final int quantity;
@@ -21,6 +23,19 @@ class ReservationModel {
     this.couponId,
   });
 
+  @override
+  List<Object?> get props => [
+    id,
+    packageId,
+    quantity,
+    totalPrice,
+    discountAmount,
+    finalPrice,
+    pickupCode,
+    status,
+    couponId,
+  ];
+
   factory ReservationModel.fromJson(Map<String, dynamic> json) {
     return ReservationModel(
       id: json['id'] as String? ?? '',
@@ -42,7 +57,7 @@ class ReservationModel {
   }
 }
 
-class CouponModel {
+class CouponModel extends Equatable {
   final String id;
   final String code;
   final String discountType;
@@ -56,6 +71,15 @@ class CouponModel {
     required this.discountValue,
     required this.minOrderAmount,
   });
+
+  @override
+  List<Object?> get props => [
+    id,
+    code,
+    discountType,
+    discountValue,
+    minOrderAmount,
+  ];
 
   factory CouponModel.fromJson(Map<String, dynamic> json) {
     return CouponModel(

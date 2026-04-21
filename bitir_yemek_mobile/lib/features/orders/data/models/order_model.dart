@@ -1,4 +1,6 @@
-class OrderModel {
+import 'package:equatable/equatable.dart';
+
+class OrderModel extends Equatable {
   final String id;
   final String packageId;
   final int quantity;
@@ -45,6 +47,21 @@ class OrderModel {
     );
   }
 
+  @override
+  List<Object?> get props => [
+    id,
+    packageId,
+    quantity,
+    totalPrice,
+    discountAmount,
+    finalPrice,
+    pickupCode,
+    status,
+    couponId,
+    createdAt,
+    package,
+  ];
+
   bool get isActive => status == 'pending' || status == 'confirmed';
   bool get isCompleted => status == 'picked_up';
   bool get isCancelled => status == 'cancelled';
@@ -72,7 +89,7 @@ class OrderModel {
   }
 }
 
-class OrderPackageModel {
+class OrderPackageModel extends Equatable {
   final String id;
   final String title;
   final double discountedPrice;
@@ -86,6 +103,9 @@ class OrderPackageModel {
     this.imageUrl,
     this.business,
   });
+
+  @override
+  List<Object?> get props => [id, title, discountedPrice, imageUrl, business];
 
   factory OrderPackageModel.fromJson(Map<String, dynamic> json) {
     return OrderPackageModel(
@@ -102,7 +122,7 @@ class OrderPackageModel {
   }
 }
 
-class OrderBusinessModel {
+class OrderBusinessModel extends Equatable {
   final String id;
   final String name;
   final String address;
@@ -115,6 +135,9 @@ class OrderBusinessModel {
     this.phone,
   });
 
+  @override
+  List<Object?> get props => [id, name, address, phone];
+
   factory OrderBusinessModel.fromJson(Map<String, dynamic> json) {
     return OrderBusinessModel(
       id: json['id'] as String? ?? '',
@@ -125,7 +148,7 @@ class OrderBusinessModel {
   }
 }
 
-class OrdersResponse {
+class OrdersResponse extends Equatable {
   final List<OrderModel> orders;
   final int total;
   final int page;
@@ -137,6 +160,9 @@ class OrdersResponse {
     required this.page,
     required this.totalPages,
   });
+
+  @override
+  List<Object?> get props => [orders, total, page, totalPages];
 
   factory OrdersResponse.fromJson(Map<String, dynamic> json) {
     final data = json['data'] as List<dynamic>? ?? [];

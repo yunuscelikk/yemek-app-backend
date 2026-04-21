@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../config/theme.dart';
+import '../../../../shared/widgets/app_cached_image.dart';
 import '../../data/models/owner_business_model.dart';
 import 'business_owner_scaffold.dart';
 import 'register_business_page.dart';
@@ -100,20 +101,17 @@ class _BusinessCard extends StatelessWidget {
                 color: AppColors.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(AppRadius.md),
               ),
-              child: business.imageUrl != null
-                  ? ClipRRect(
-                      borderRadius: BorderRadius.circular(AppRadius.md),
-                      child: Image.network(
-                        business.imageUrl!,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) =>
-                            const Icon(
-                              Icons.storefront,
-                              color: AppColors.primary,
-                            ),
-                      ),
-                    )
-                  : const Icon(Icons.storefront, color: AppColors.primary),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(AppRadius.md),
+                child: AppCachedImage(
+                  imageUrl: business.imageUrl,
+                  fit: BoxFit.cover,
+                  placeholder: const Icon(
+                    Icons.storefront,
+                    color: AppColors.primary,
+                  ),
+                ),
+              ),
             ),
 
             const SizedBox(width: AppSpacing.md),

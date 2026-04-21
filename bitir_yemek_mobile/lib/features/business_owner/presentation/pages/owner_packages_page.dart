@@ -43,6 +43,10 @@ class _OwnerPackagesPageState extends State<OwnerPackagesPage>
             );
           }
         },
+        buildWhen: (previous, current) =>
+            current is! PackageDeleteError &&
+            (previous.runtimeType != current.runtimeType ||
+                current is OwnerPackagesLoaded),
         builder: (context, state) {
           return RefreshIndicator(
             color: AppColors.primary,

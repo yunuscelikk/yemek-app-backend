@@ -1,6 +1,8 @@
 const router = require('express').Router();
 const userController = require('../controllers/userController');
 const { authenticate } = require('../middlewares/auth');
+const { validate } = require('../middlewares/validate');
+const { profileUpdateSchema } = require('../validations/schemas');
 
 /**
  * @swagger
@@ -58,6 +60,6 @@ router.get('/profile', authenticate, userController.getProfile);
  *       401:
  *         description: Yetkilendirme hatası
  */
-router.put('/profile', authenticate, userController.updateProfile);
+router.put('/profile', authenticate, validate(profileUpdateSchema), userController.updateProfile);
 
 module.exports = router;

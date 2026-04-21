@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../../config/theme.dart';
+import '../../../../shared/widgets/app_cached_image.dart';
 import '../../../../core/network/dio_client.dart';
+import '../../../../core/storage/token_storage.dart';
 import '../../data/datasources/businesses_remote_datasource.dart';
 import '../../data/models/business_detail_model.dart';
 import '../../data/models/package_model.dart';
@@ -33,7 +35,9 @@ class _BusinessDetailPageState extends State<BusinessDetailPage> {
   void initState() {
     super.initState();
     _repository = BusinessesRepositoryImpl(
-      remoteDataSource: BusinessesRemoteDataSource(dioClient: DioClient()),
+      remoteDataSource: BusinessesRemoteDataSource(
+        dioClient: DioClient(tokenStorage: createDefaultTokenStorage()),
+      ),
     );
     _loadDetail();
   }
@@ -124,14 +128,11 @@ class _BusinessDetailPageState extends State<BusinessDetailPage> {
               background: Stack(
                 fit: StackFit.expand,
                 children: [
-                  detail.imageUrl != null && detail.imageUrl!.isNotEmpty
-                      ? Image.network(
-                          detail.imageUrl!,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) =>
-                              _buildPlaceholderImage(),
-                        )
-                      : _buildPlaceholderImage(),
+                  AppCachedImage(
+                    imageUrl: detail.imageUrl,
+                    fit: BoxFit.cover,
+                    placeholder: _buildPlaceholderImage(),
+                  ),
                   // Gradient overlay
                   Container(
                     decoration: BoxDecoration(
@@ -411,11 +412,10 @@ class _BusinessDetailPageState extends State<BusinessDetailPage> {
                 width: 72,
                 height: 72,
                 child: pkg.imageUrl != null && pkg.imageUrl!.isNotEmpty
-                    ? Image.network(
-                        pkg.imageUrl!,
+                    ? AppCachedImage(
+                        imageUrl: pkg.imageUrl,
                         fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) =>
-                            _buildSmallPlaceholder(),
+                        placeholder: _buildSmallPlaceholder(),
                       )
                     : _buildSmallPlaceholder(),
               ),

@@ -1,4 +1,6 @@
-class UserModel {
+import 'package:equatable/equatable.dart';
+
+class UserModel extends Equatable {
   final String id;
   final String name;
   final String email;
@@ -45,6 +47,20 @@ class UserModel {
           DateTime.now(),
     );
   }
+
+  @override
+  List<Object?> get props => [
+    id,
+    name,
+    email,
+    phone,
+    role,
+    latitude,
+    longitude,
+    isEmailVerified,
+    createdAt,
+    updatedAt,
+  ];
 
   Map<String, dynamic> toJson() {
     return {

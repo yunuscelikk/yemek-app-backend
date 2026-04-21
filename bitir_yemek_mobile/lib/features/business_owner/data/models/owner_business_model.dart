@@ -1,4 +1,6 @@
-class OwnerCategoryModel {
+import 'package:equatable/equatable.dart';
+
+class OwnerCategoryModel extends Equatable {
   final int id;
   final String name;
   final String slug;
@@ -9,6 +11,9 @@ class OwnerCategoryModel {
     required this.slug,
   });
 
+  @override
+  List<Object?> get props => [id, name, slug];
+
   factory OwnerCategoryModel.fromJson(Map<String, dynamic> json) {
     return OwnerCategoryModel(
       id: (json['id'] as num).toInt(),
@@ -18,7 +23,7 @@ class OwnerCategoryModel {
   }
 }
 
-class OwnerBusinessModel {
+class OwnerBusinessModel extends Equatable {
   final String id;
   final String name;
   final String address;
@@ -48,6 +53,23 @@ class OwnerBusinessModel {
     required this.pendingOrders,
     this.category,
   });
+
+  @override
+  List<Object?> get props => [
+    id,
+    name,
+    address,
+    city,
+    district,
+    imageUrl,
+    isApproved,
+    approvalStatus,
+    isActive,
+    rating,
+    activePackages,
+    pendingOrders,
+    category,
+  ];
 
   factory OwnerBusinessModel.fromJson(Map<String, dynamic> json) {
     return OwnerBusinessModel(

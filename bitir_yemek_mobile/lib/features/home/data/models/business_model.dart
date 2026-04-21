@@ -1,6 +1,7 @@
+import 'package:equatable/equatable.dart';
 import 'category_model.dart';
 
-class BusinessModel {
+class BusinessModel extends Equatable {
   final String id;
   final String name;
   final String? description;
@@ -36,6 +37,26 @@ class BusinessModel {
     required this.category,
     this.distance,
   });
+
+  @override
+  List<Object?> get props => [
+    id,
+    name,
+    description,
+    address,
+    city,
+    district,
+    latitude,
+    longitude,
+    phone,
+    imageUrl,
+    rating,
+    isActive,
+    isApproved,
+    approvalStatus,
+    category,
+    distance,
+  ];
 
   factory BusinessModel.fromJson(Map<String, dynamic> json) {
     return BusinessModel(
@@ -81,7 +102,7 @@ class BusinessModel {
   }
 }
 
-class PaginationModel {
+class PaginationModel extends Equatable {
   final int total;
   final int page;
   final int limit;
@@ -93,6 +114,9 @@ class PaginationModel {
     required this.limit,
     required this.totalPages,
   });
+
+  @override
+  List<Object?> get props => [total, page, limit, totalPages];
 
   factory PaginationModel.fromJson(Map<String, dynamic> json) {
     return PaginationModel(
@@ -110,11 +134,14 @@ class PaginationModel {
   }
 }
 
-class BusinessesResponse {
+class BusinessesResponse extends Equatable {
   final List<BusinessModel> data;
   final PaginationModel pagination;
 
   BusinessesResponse({required this.data, required this.pagination});
+
+  @override
+  List<Object?> get props => [data, pagination];
 
   factory BusinessesResponse.fromJson(Map<String, dynamic> json) {
     final dataList = (json['data'] as List<dynamic>)

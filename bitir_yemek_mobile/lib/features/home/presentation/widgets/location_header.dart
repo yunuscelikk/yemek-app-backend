@@ -100,7 +100,6 @@ class _LocationHeaderState extends State<LocationHeader> {
                     maxLines: 1,
                   ),
           ),
-          Icon(Icons.keyboard_arrow_down, color: AppColors.textPrimary),
         ],
       ),
     );

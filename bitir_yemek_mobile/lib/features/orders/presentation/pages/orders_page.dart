@@ -21,6 +21,11 @@ class _OrdersPageState extends State<OrdersPage> {
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
+    // Lazy load: only fire the API call the first time this tab is visited
+    final bloc = context.read<OrdersBloc>();
+    if (bloc.state is OrdersInitial) {
+      bloc.add(const LoadOrders());
+    }
   }
 
   @override
@@ -130,11 +135,7 @@ class _OrdersPageState extends State<OrdersPage> {
     if (state is OrdersError) {
       return CustomScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        slivers: [
-          SliverFillRemaining(
-            child: _buildErrorState(state.message),
-          ),
-        ],
+        slivers: [SliverFillRemaining(child: _buildErrorState(state.message))],
       );
     }
 
@@ -150,11 +151,7 @@ class _OrdersPageState extends State<OrdersPage> {
       if (filteredOrders.isEmpty) {
         return CustomScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
-          slivers: [
-            SliverFillRemaining(
-              child: _buildEmptyState(filter),
-            ),
-          ],
+          slivers: [SliverFillRemaining(child: _buildEmptyState(filter))],
         );
       }
 
@@ -171,9 +168,7 @@ class _OrdersPageState extends State<OrdersPage> {
             return const Padding(
               padding: EdgeInsets.all(AppSpacing.md),
               child: Center(
-                child: CircularProgressIndicator(
-                  color: AppColors.primary,
-                ),
+                child: CircularProgressIndicator(color: AppColors.primary),
               ),
             );
           }

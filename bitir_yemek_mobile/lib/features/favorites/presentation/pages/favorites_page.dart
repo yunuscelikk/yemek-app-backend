@@ -22,6 +22,11 @@ class _FavoritesPageState extends State<FavoritesPage> {
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
+    // Lazy load: only fire the API call the first time this tab is visited
+    final bloc = context.read<FavoritesBloc>();
+    if (bloc.state is FavoritesInitial) {
+      bloc.add(const LoadFavorites());
+    }
   }
 
   @override

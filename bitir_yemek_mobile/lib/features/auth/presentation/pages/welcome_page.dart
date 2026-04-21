@@ -1,192 +1,228 @@
 import 'package:flutter/material.dart';
 import '../../../../config/theme.dart';
-import '../../domain/user_type.dart';
 import 'login_page.dart';
 
-class WelcomePage extends StatelessWidget {
+class WelcomePage extends StatefulWidget {
   const WelcomePage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.screenPadding,
-          ),
-          child: Column(
-            children: [
-              const Spacer(flex: 2),
-
-              // Logo + Title
-              Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  color: AppColors.primary,
-                  borderRadius: BorderRadius.circular(AppRadius.xl),
-                ),
-                child: const Icon(Icons.eco, size: 44, color: Colors.white),
-              ),
-
-              const SizedBox(height: AppSpacing.lg),
-
-              Text(
-                'Bitir Yemek',
-                style: AppTypography.h2.copyWith(
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-
-              const SizedBox(height: AppSpacing.sm),
-
-              Text(
-                'Yiyecek israfını önle,\npara biriktir, dünyayı kurtar.',
-                textAlign: TextAlign.center,
-                style: AppTypography.bodyMedium.copyWith(
-                  color: AppColors.textSecondary,
-                ),
-              ),
-
-              const Spacer(flex: 2),
-
-              // Section Title
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Nasıl devam etmek istersiniz?',
-                  style: AppTypography.bodyLarge.copyWith(
-                    color: AppColors.textPrimary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: AppSpacing.md),
-
-              // Customer Card
-              _UserTypeCard(
-                userType: UserType.customer,
-                icon: Icons.person_outline_rounded,
-                title: 'Müşteri',
-                subtitle: 'Yakınındaki sürpriz paketleri keşfet',
-                color: AppColors.primary,
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          LoginPage(userType: UserType.customer),
-                    ),
-                  );
-                },
-              ),
-
-              const SizedBox(height: AppSpacing.md),
-
-              // Business Owner Card
-              _UserTypeCard(
-                userType: UserType.businessOwner,
-                icon: Icons.storefront_outlined,
-                title: 'İşletme Sahibi',
-                subtitle: 'İşletmeni yönet, arta kalan yiyecekleri değerlendir',
-                color: AppColors.googleButton,
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          LoginPage(userType: UserType.businessOwner),
-                    ),
-                  );
-                },
-              ),
-
-              const Spacer(flex: 1),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+  State<WelcomePage> createState() => _WelcomePageState();
 }
 
-class _UserTypeCard extends StatelessWidget {
-  final UserType userType;
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final Color color;
-  final VoidCallback onTap;
+class _WelcomePageState extends State<WelcomePage> {
+  final PageController _pageController = PageController();
+  int _currentPage = 0;
 
-  const _UserTypeCard({
-    required this.userType,
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.color,
-    required this.onTap,
-  });
+  final List<_OnboardingData> _pages = const [
+    _OnboardingData(
+      icon: Icons.eco_rounded,
+      iconColor: Color(0xFF4CAF50),
+      title: 'Yiyecek İsrafına Son',
+      description:
+          'Restoranlardan ve marketlerden arta kalan lezzetli yiyecekleri keşfet, hem cebini hem dünyayı koru.',
+    ),
+    _OnboardingData(
+      icon: Icons.card_giftcard_rounded,
+      iconColor: Color(0xFFFF7043),
+      title: 'Sürpriz Paketler',
+      description:
+          'İşletmelerin hazırladığı sürpriz paketleri uygun fiyatlarla al. Ne geleceğini merak et, sürprizin tadını çıkar!',
+    ),
+    _OnboardingData(
+      icon: Icons.storefront_rounded,
+      iconColor: Color(0xFF00796B),
+      title: 'İşletmeler İçin',
+      description:
+          'Arta kalan ürünlerini sürpriz paketlerle değerlendir, yeni müşteriler kazan ve israfı azalt.',
+    ),
+  ];
+
+  void _goToLogin() {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (context) => const LoginPage()));
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(AppSpacing.md),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(AppRadius.lg),
-          border: Border.all(color: AppColors.divider, width: 1.5),
-        ),
-        child: Row(
+    final isLastPage = _currentPage == _pages.length - 1;
+
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: Column(
           children: [
-            // Icon container
-            Container(
-              width: 52,
-              height: 52,
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(AppRadius.md),
+            // Skip button
+            Align(
+              alignment: Alignment.centerRight,
+              child: Padding(
+                padding: const EdgeInsets.only(
+                  top: AppSpacing.md,
+                  right: AppSpacing.screenPadding,
+                ),
+                child: TextButton(
+                  onPressed: _goToLogin,
+                  child: Text(
+                    'Atla',
+                    style: AppTypography.bodyMedium.copyWith(
+                      color: AppColors.textSecondary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
               ),
-              child: Icon(icon, color: color, size: 28),
             ),
 
-            const SizedBox(width: AppSpacing.md),
-
-            // Text
+            // PageView
             Expanded(
+              child: PageView.builder(
+                controller: _pageController,
+                itemCount: _pages.length,
+                onPageChanged: (index) {
+                  setState(() => _currentPage = index);
+                },
+                itemBuilder: (context, index) {
+                  final page = _pages[index];
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.screenPadding,
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // Icon circle
+                        Container(
+                          width: 120,
+                          height: 120,
+                          decoration: BoxDecoration(
+                            color: page.iconColor.withValues(alpha: 0.12),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            page.icon,
+                            size: 56,
+                            color: page.iconColor,
+                          ),
+                        ),
+
+                        const SizedBox(height: AppSpacing.xxl),
+
+                        // Title
+                        Text(
+                          page.title,
+                          textAlign: TextAlign.center,
+                          style: AppTypography.h1.copyWith(
+                            color: AppColors.textPrimary,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+
+                        const SizedBox(height: AppSpacing.md),
+
+                        // Description
+                        Text(
+                          page.description,
+                          textAlign: TextAlign.center,
+                          style: AppTypography.bodyLarge.copyWith(
+                            color: AppColors.textSecondary,
+                            height: 1.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+
+            // Bottom section: dots + button
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.screenPadding,
+              ),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    title,
-                    style: AppTypography.bodyLarge.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
+                  // Dot indicators
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(
+                      _pages.length,
+                      (index) => AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        margin: const EdgeInsets.symmetric(horizontal: 4),
+                        width: _currentPage == index ? 28 : 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: _currentPage == index
+                              ? AppColors.primary
+                              : AppColors.textHint.withValues(alpha: 0.3),
+                          borderRadius: BorderRadius.circular(AppRadius.full),
+                        ),
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    subtitle,
-                    style: AppTypography.bodySmall.copyWith(
-                      color: AppColors.textSecondary,
+
+                  const SizedBox(height: AppSpacing.xl),
+
+                  // Action button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        if (isLastPage) {
+                          _goToLogin();
+                        } else {
+                          _pageController.nextPage(
+                            duration: const Duration(milliseconds: 400),
+                            curve: Curves.easeInOut,
+                          );
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(AppRadius.full),
+                        ),
+                      ),
+                      child: Text(
+                        isLastPage ? 'Başlayalım' : 'Devam',
+                        style: AppTypography.button.copyWith(
+                          color: Colors.white,
+                        ),
+                      ),
                     ),
                   ),
+
+                  const SizedBox(height: AppSpacing.xxl),
                 ],
               ),
-            ),
-
-            // Arrow
-            Icon(
-              Icons.arrow_forward_ios_rounded,
-              size: 16,
-              color: AppColors.textHint,
             ),
           ],
         ),
       ),
     );
   }
+}
+
+class _OnboardingData {
+  final IconData icon;
+  final Color iconColor;
+  final String title;
+  final String description;
+
+  const _OnboardingData({
+    required this.icon,
+    required this.iconColor,
+    required this.title,
+    required this.description,
+  });
 }

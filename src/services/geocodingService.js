@@ -1,4 +1,5 @@
 const axios = require('axios');
+const logger = require('./logger');
 
 const GOOGLE_MAPS_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
 
@@ -23,7 +24,7 @@ const geocodeAddress = async (address) => {
     }
     return null;
   } catch (error) {
-    console.error('Geocoding error:', error.message);
+    logger.error('Geocoding error:', { error: error.message });
     return null;
   }
 };
@@ -49,7 +50,7 @@ const reverseGeocode = async (lat, lng) => {
     }
     return null;
   } catch (error) {
-    console.error('Reverse geocoding error:', error.message);
+    logger.error('Reverse geocoding error:', { error: error.message });
     return null;
   }
 };
@@ -86,7 +87,7 @@ const getDirections = async (originLat, originLng, destLat, destLng) => {
     }
     return null;
   } catch (error) {
-    console.error('Directions error:', error.message);
+    logger.error('Directions error:', { error: error.message });
     return null;
   }
 };

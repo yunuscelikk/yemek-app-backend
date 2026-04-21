@@ -112,6 +112,9 @@ class _OrdersList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<OwnerOrdersBloc, OwnerOrdersState>(
+      buildWhen: (previous, current) =>
+          previous.runtimeType != current.runtimeType ||
+          (current is OwnerOrdersLoaded && current.status == status),
       builder: (context, state) {
         // If the current loaded state is for a different status, show loading
         if (state is OwnerOrdersLoading) {

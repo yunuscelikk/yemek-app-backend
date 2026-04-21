@@ -1,8 +1,9 @@
+import 'package:equatable/equatable.dart';
 import 'package_model.dart';
 import 'business_model.dart';
 import 'category_model.dart';
 
-class BusinessDetailModel {
+class BusinessDetailModel extends Equatable {
   final String id;
   final String name;
   final String? description;
@@ -38,6 +39,26 @@ class BusinessDetailModel {
     required this.reviews,
     required this.packages,
   });
+
+  @override
+  List<Object?> get props => [
+    id,
+    name,
+    description,
+    address,
+    city,
+    district,
+    latitude,
+    longitude,
+    phone,
+    imageUrl,
+    rating,
+    isActive,
+    isApproved,
+    category,
+    reviews,
+    packages,
+  ];
 
   factory BusinessDetailModel.fromJson(Map<String, dynamic> json) {
     final category = CategoryModel.fromJson(
@@ -151,7 +172,7 @@ class BusinessDetailModel {
   }
 }
 
-class ReviewModel {
+class ReviewModel extends Equatable {
   final String id;
   final int rating;
   final String? comment;
@@ -179,4 +200,7 @@ class ReviewModel {
           : DateTime.now(),
     );
   }
+
+  @override
+  List<Object?> get props => [id, rating, comment, userName, createdAt];
 }

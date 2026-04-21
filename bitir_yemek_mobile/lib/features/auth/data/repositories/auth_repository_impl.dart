@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:google_sign_in/google_sign_in.dart';
 
+import '../../../../config/constants.dart';
 import '../../../../core/storage/token_storage.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/auth_remote_datasource.dart';
@@ -84,12 +85,11 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<AuthResult> googleLogin({required String role}) async {
     try {
-      const clientId =
-          '903437063740-k6sd7h1j9ou3rc27rjrfp9q0h58efeqh.apps.googleusercontent.com';
+      final clientId = AppConstants.googleClientId;
 
       final googleSignIn = GoogleSignIn(
-        clientId: clientId,
-        serverClientId: clientId,
+        clientId: clientId.isNotEmpty ? clientId : null,
+        serverClientId: clientId.isNotEmpty ? clientId : null,
         scopes: ['email', 'profile'],
       );
 

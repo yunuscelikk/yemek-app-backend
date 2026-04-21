@@ -14,8 +14,10 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('tr_TR');
 
-  // Initialize Mapbox SDK with access token
-  MapboxOptions.setAccessToken(AppConstants.mapboxAccessToken);
+  // Initialize Mapbox SDK with access token (only if provided)
+  if (AppConstants.mapboxAccessToken.isNotEmpty) {
+    MapboxOptions.setAccessToken(AppConstants.mapboxAccessToken);
+  }
 
   runApp(const MainApp());
 }
@@ -26,7 +28,7 @@ class MainApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Bitir Yemek',
+      title: 'BitirGitsin',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       home: const SplashScreen(),
@@ -126,7 +128,7 @@ class _SplashScreenState extends State<SplashScreen> {
             const SizedBox(height: 24),
             // App Name
             Text(
-              'Bitir Yemek',
+              'BitirGitsin',
               style: AppTypography.h2.copyWith(color: AppColors.primary),
             ),
             const SizedBox(height: 48),
