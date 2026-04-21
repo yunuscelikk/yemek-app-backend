@@ -1,10 +1,11 @@
 const { Sequelize } = require('sequelize');
 
 const isProduction = process.env.NODE_ENV === 'production';
+const useSSL = process.env.DB_SSL === 'true' || (process.env.DATABASE_URL && process.env.DATABASE_URL.includes('sslmode=require'));
 
 const dbOptions = {
   dialect: 'postgres',
-  logging: false,
+  logging: isProduction ? false : console.log,
   pool: {
     max: isProduction ? 10 : 20,
     min: isProduction ? 2 : 3,
@@ -13,8 +14,8 @@ const dbOptions = {
   },
 };
 
-// Railway provides DATABASE_URL; use it if available
-if (isProduction) {
+// Only add SSL if explicitly required
+if (useSSL) {
   dbOptions.dialectOptions = {
     ssl: {
       require: true,
@@ -23,17 +24,23 @@ if (isProduction) {
   };
 }
 
-const sequelize = process.env.DATABASE_URL
-  ? new Sequelize(process.env.DATABASE_URL, dbOptions)
-  : new Sequelize(
-      process.env.DB_NAME,
-      process.env.DB_USER,
-      process.env.DB_PASSWORD,
-      {
-        host: process.env.DB_HOST,
-        port: process.env.DB_PORT,
-        ...dbOptions,
-      }
-    );
+let sequelize;
+try {
+  sequelize = process.env.DATABASE_URL
+    ? new Sequelize(process.env.DATABASE_URL, dbOptions)
+    : new Sequelize(
+        process.env.DB_NAME,
+        process.env.DB_USER,
+        process.env.DB_PASSWORD,
+        {
+          host: process.env.DB_HOST,
+          port: process.env.DB_PORT,
+          ...dbOptions,
+        }
+      );
+} catch (error) {
+  console.error('Database initialization failed:', error.message);
+  process.exit(1);
+}
 
 module.exports = sequelize;
