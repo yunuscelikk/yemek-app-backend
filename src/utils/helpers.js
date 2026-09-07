@@ -15,7 +15,7 @@ const generatePickupCode = async () => {
     const existingOrder = await Order.findOne({
       where: {
         pickupCode: code,
-        status: { [Op.in]: ['pending', 'confirmed'] },
+        status: { [Op.in]: ['awaiting_payment', 'pending', 'confirmed'] },
       },
     });
     if (!existingOrder) {

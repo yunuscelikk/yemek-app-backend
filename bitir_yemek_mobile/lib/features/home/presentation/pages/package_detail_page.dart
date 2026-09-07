@@ -11,6 +11,7 @@ import '../../data/datasources/businesses_remote_datasource.dart';
 import '../bloc/reservation_bloc.dart';
 import '../../../favorites/presentation/bloc/favorites_bloc.dart';
 import '../widgets/package_info_card.dart';
+import 'business_detail_page.dart';
 import '../widgets/reservation_confirm_sheet.dart';
 import 'reservation_success_page.dart';
 import '../../../payment/presentation/pages/payment_page.dart';
@@ -88,7 +89,7 @@ class _PackageDetailView extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Business info row
-                    _buildBusinessHeader(),
+                    _buildBusinessHeader(context),
                     const SizedBox(height: AppSpacing.md),
 
                     // Package title & description
@@ -298,23 +299,55 @@ class _PackageDetailView extends StatelessWidget {
     );
   }
 
-  Widget _buildBusinessHeader() {
+  /// İşletme şeridi. Karta dönüştürüldü ve DOKUNULABİLİR yapıldı: kullanıcı
+  /// paketi beğenince doğal olarak "bu işletme kim?" diye merak ediyor, ama
+  /// buradan işletme sayfasına gidilemiyordu.
+  Widget _buildBusinessHeader(BuildContext context) {
+    return Material(
+      color: AppColors.surface,
+      borderRadius: BorderRadius.circular(AppRadius.lg),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        onTap: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => BusinessDetailPage(
+                businessId: package.business.id,
+                businessName: package.business.name,
+              ),
+            ),
+          );
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.sm),
+          child: _buildBusinessRow(),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBusinessRow() {
     return Row(
       children: [
-        // Business avatar
-        Container(
-          width: 44,
-          height: 44,
-          decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: 0.1),
-            shape: BoxShape.circle,
-          ),
-          child: Center(
-            child: Text(
-              package.business.name.isNotEmpty
-                  ? package.business.name[0].toUpperCase()
-                  : '?',
-              style: AppTypography.h3.copyWith(color: AppColors.primary),
+        // İşletme logosu; yoksa baş harf.
+        ClipOval(
+          child: SizedBox(
+            width: 44,
+            height: 44,
+            child: AppCachedImage(
+              imageUrl: package.business.imageUrl,
+              fit: BoxFit.cover,
+              placeholder: Container(
+                color: AppColors.primary.withValues(alpha: 0.1),
+                child: Center(
+                  child: Text(
+                    package.business.name.isNotEmpty
+                        ? package.business.name[0].toUpperCase()
+                        : '?',
+                    style: AppTypography.h3.copyWith(color: AppColors.primary),
+                  ),
+                ),
+              ),
             ),
           ),
         ),
@@ -513,8 +546,43 @@ class _PackageDetailView extends StatelessWidget {
                 ? AppColors.error
                 : AppColors.textPrimary,
           ),
+
+          // Stok çubuğu: kaç paketin tükendiğini bir bakışta gösterir.
+          // Sayıyı okumak "2 / 8" ilişkisini kurmayı gerektiriyor; çubuk aynı
+          // bilgiyi anında veriyor.
+          if (package.quantity > 0) ...[
+            const SizedBox(height: AppSpacing.sm),
+            _buildStockBar(),
+          ],
         ],
       ),
+    );
+  }
+
+  Widget _buildStockBar() {
+    final ratio = (package.remainingQuantity / package.quantity).clamp(0.0, 1.0);
+    final isLow = package.remainingQuantity <= 3;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(AppRadius.full),
+          child: LinearProgressIndicator(
+            value: ratio,
+            minHeight: 6,
+            backgroundColor: AppColors.divider,
+            valueColor: AlwaysStoppedAnimation<Color>(
+              isLow ? AppColors.error : AppColors.success,
+            ),
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          '${package.quantity} paketten ${package.remainingQuantity} tanesi kaldı',
+          style: AppTypography.caption.copyWith(color: AppColors.textHint),
+        ),
+      ],
     );
   }
 
@@ -582,13 +650,44 @@ class _PackageDetailView extends StatelessWidget {
               borderRadius: BorderRadius.circular(AppRadius.md),
             ),
           ),
-          child: Text(
-            isOutOfStock ? 'Tukendi' : 'Rezerve Et',
-            style: AppTypography.button.copyWith(
-              fontSize: 18,
-              color: isOutOfStock ? AppColors.textHint : Colors.white,
-            ),
-          ),
+          // Fiyat butonda da yazıyor: sayfa kaydırılınca fiyat kartı ekrandan
+          // çıkıyor ve kullanıcı "ne kadara rezerve ediyorum?" sorusunu
+          // yukarı kaydırmadan cevaplayamıyordu.
+          child: isOutOfStock
+              ? Text(
+                  'Tükendi',
+                  style: AppTypography.button.copyWith(
+                    fontSize: 18,
+                    color: AppColors.textHint,
+                  ),
+                )
+              : Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Rezerve Et',
+                      style: AppTypography.button.copyWith(
+                        fontSize: 18,
+                        color: Colors.white,
+                      ),
+                    ),
+                    Container(
+                      width: 1,
+                      height: 18,
+                      margin: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.md,
+                      ),
+                      color: Colors.white.withValues(alpha: 0.4),
+                    ),
+                    Text(
+                      '₺${package.discountedPrice.toStringAsFixed(0)}',
+                      style: AppTypography.button.copyWith(
+                        fontSize: 18,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
         ),
       ),
     );

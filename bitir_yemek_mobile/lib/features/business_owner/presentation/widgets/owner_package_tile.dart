@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../config/theme.dart';
+import '../../../../core/utils/time_format.dart';
 import '../../../../shared/widgets/app_dialog.dart';
 import '../../data/models/owner_package_model.dart';
 
@@ -81,7 +82,7 @@ class OwnerPackageTile extends StatelessWidget {
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    '${package.pickupDate}  ${package.pickupStart}-${package.pickupEnd}',
+                    '${package.pickupDate}  ${hhmm(package.pickupStart)}-${hhmm(package.pickupEnd)}',
                     style: AppTypography.bodySmall.copyWith(
                       color: AppColors.textHint,
                     ),

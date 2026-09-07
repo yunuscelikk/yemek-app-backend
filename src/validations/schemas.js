@@ -4,7 +4,7 @@ const { z } = require("zod");
 const registerSchema = z.object({
   name: z.string().min(1, "Ad soyad gerekli"),
   email: z.string().email("Geçerli bir e-posta adresi girin"),
-  password: z.string().min(8, "Şifre en az 8 karakter olmalı"),
+  password: z.string().min(8, "Şifre en az 8 karakter olmalı").max(72, "Şifre en fazla 72 karakter olmalı"),
   phone: z.string().optional(),
   role: z.enum(["customer", "business_owner"]).optional(),
 });
@@ -200,6 +200,8 @@ const profileUpdateSchema = z.object({
 
 // Query parameter schemas
 const paginationSchema = z.object({
+  status: z.enum(['awaiting_payment', 'pending', 'confirmed', 'picked_up', 'cancelled']).optional(),
+  unreadOnly: z.enum(['true', 'false']).optional(),
   page: z.string().regex(/^\d+$/).transform(Number).optional(),
   limit: z.string().regex(/^\d+$/).transform(Number).optional(),
 });
@@ -276,8 +278,9 @@ const forgotPasswordSchema = z.object({
 });
 
 const resetPasswordSchema = z.object({
-  token: z.string().min(1, "Token gerekli"),
-  password: z.string().min(8, "Şifre en az 8 karakter olmalı"),
+  email: z.string().email("Geçerli bir e-posta adresi girin"),
+  token: z.string().regex(/^\d{6}$/, "Kod 6 haneli olmalı"),
+  password: z.string().min(8, "Şifre en az 8 karakter olmalı").max(72, "Şifre en fazla 72 karakter olmalı"),
 });
 
 // Passwordless OTP login/registration
@@ -340,6 +343,7 @@ const adminBusinessQuerySchema = z.object({
   subMerchantStatus: z.enum(["none", "active", "error"]).optional(),
 });
 const adminOrderQuerySchema = z.object({
+  refundStatus: z.enum(["none", "pending", "processing", "review", "completed"]).optional(),
   ...pageLimit,
   status: z.enum(["awaiting_payment", "pending", "confirmed", "picked_up", "cancelled"]).optional(),
   paymentStatus: z.enum(["unpaid", "pending", "paid", "failed", "refunded", "partially_refunded"]).optional(),

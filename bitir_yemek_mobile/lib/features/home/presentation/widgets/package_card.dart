@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../config/theme.dart';
+import '../../../../core/utils/time_format.dart';
 import '../../../../shared/widgets/app_cached_image.dart';
 import '../../../favorites/presentation/widgets/favorite_button.dart';
 import '../../data/models/package_model.dart';
@@ -223,7 +224,7 @@ class PackageCard extends StatelessWidget {
 
   Widget _pickupRow() {
     final dateLabel = _pickupDateLabel(package.pickupDate);
-    final timeLabel = '${_hhmm(package.pickupStart)} - ${_hhmm(package.pickupEnd)}';
+    final timeLabel = pickupWindow(package.pickupStart, package.pickupEnd);
     final distance = package.business.distance;
 
     return Row(
@@ -283,8 +284,6 @@ class PackageCard extends StatelessWidget {
   }
 
   // --- Biçim yardımcıları ---
-
-  String _hhmm(String time) => time.length >= 5 ? time.substring(0, 5) : time;
 
   String _formatDistance(double km) =>
       km < 1 ? '${(km * 1000).round()} m' : '${km.toStringAsFixed(1)} km';

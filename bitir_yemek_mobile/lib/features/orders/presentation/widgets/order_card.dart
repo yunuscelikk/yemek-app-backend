@@ -102,7 +102,8 @@ class OrderCard extends StatelessWidget {
             child: Row(
               children: [
                 // Pickup code
-                if (order.isActive || order.isCompleted) ...[
+                if (!order.isAwaitingPayment &&
+                    (order.isActive || order.isCompleted)) ...[
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppSpacing.sm,

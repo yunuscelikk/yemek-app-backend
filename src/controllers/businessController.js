@@ -1,5 +1,6 @@
 const {
   Business,
+  Order,
   Category,
   User,
   Review,
@@ -213,7 +214,12 @@ exports.update = async (req, res, next) => {
       isActive,
     } = req.body;
 
-    await business.update({
+    await sequelize.transaction(async (transaction) => {
+      await business.reload({ transaction, lock: true });
+      if (business.isSuspended && isActive === true && req.user.role !== 'admin') {
+        throw Object.assign(new Error('İşletme yönetici tarafından askıya alınmış'), { statusCode: 403 });
+      }
+      await business.update({
       name,
       description,
       address,
@@ -225,8 +231,10 @@ exports.update = async (req, res, next) => {
       imageUrl,
       categoryId,
       isActive,
-    });
+      }, { transaction });
 
+    });
+    await cacheService.invalidateNamespace('packages:list');
     await cacheService.invalidateNamespace('businesses:list');
 
     res.json({
@@ -252,7 +260,16 @@ exports.remove = async (req, res, next) => {
         .json({ message: "Bu işletmeyi silme yetkiniz yok" });
     }
 
-    await business.destroy();
+    await sequelize.transaction(async (transaction) => {
+      await business.reload({ transaction, lock: true });
+      const packages = await SurprisePackage.findAll({ where: { businessId: business.id }, attributes: ['id'], paranoid: false, transaction });
+      const active = await Order.count({ where: { packageId: { [Op.in]: packages.map(p => p.id) },
+        [Op.or]: [{ status: { [Op.in]: ['awaiting_payment', 'pending', 'confirmed'] } },
+          { refundStatus: { [Op.in]: ['pending', 'processing', 'review'] } }] }, transaction });
+      if (active) throw Object.assign(new Error('Aktif sipariş veya tamamlanmamış iade bulunan işletme silinemez'), { statusCode: 409 });
+      await business.destroy({ transaction });
+    });
+    await cacheService.invalidateNamespace('packages:list');
 
     await cacheService.invalidateNamespace('businesses:list');
 

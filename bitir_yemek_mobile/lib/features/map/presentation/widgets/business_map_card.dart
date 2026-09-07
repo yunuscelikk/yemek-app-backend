@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../config/theme.dart';
+import '../../../../core/utils/time_format.dart';
 import '../../../../shared/widgets/app_cached_image.dart';
 import '../../../favorites/presentation/widgets/favorite_button.dart';
 import '../../../home/data/models/business_model.dart';
@@ -382,7 +383,7 @@ class _BusinessMapCardState extends State<BusinessMapCard>
   Widget _buildPickupRow(PackageModel pkg) {
     final dateLabel = _pickupDateLabel(pkg.pickupDate);
     final timeLabel =
-        '${_hhmm(pkg.pickupStart)} - ${_hhmm(pkg.pickupEnd)}';
+        pickupWindow(pkg.pickupStart, pkg.pickupEnd);
 
     return Row(
       children: [
@@ -536,10 +537,6 @@ class _BusinessMapCardState extends State<BusinessMapCard>
   }
 
   // --- Yardımcılar ---
-
-  /// "HH:MM:SS" → "HH:MM"
-  String _hhmm(String time) =>
-      time.length >= 5 ? time.substring(0, 5) : time;
 
   String _formatDistance(double km) =>
       km < 1 ? '${(km * 1000).round()} m' : '${km.toStringAsFixed(1)} km';

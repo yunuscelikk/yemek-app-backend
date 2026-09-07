@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../config/theme.dart';
+import '../../../../core/utils/time_format.dart';
 import '../../data/models/owner_order_model.dart';
 
 class OwnerOrderTile extends StatelessWidget {
@@ -67,7 +68,7 @@ class OwnerOrderTile extends StatelessWidget {
               Icon(Icons.schedule, size: 14, color: AppColors.textHint),
               const SizedBox(width: 4),
               Text(
-                '${order.package?.pickupStart ?? ''} - ${order.package?.pickupEnd ?? ''}',
+                pickupWindow(order.package?.pickupStart, order.package?.pickupEnd),
                 style: AppTypography.bodySmall.copyWith(
                   color: AppColors.textHint,
                 ),

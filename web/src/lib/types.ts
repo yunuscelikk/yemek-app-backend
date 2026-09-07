@@ -120,6 +120,8 @@ export interface Order {
   commissionAmount?: number | null;
   subMerchantPrice?: number | null;
   refundAmount?: number | null;
+  refundStatus?: "none" | "pending" | "processing" | "review" | "completed";
+  fraudReview?: boolean;
   paymentTransactionId?: string | null;
   paymentId?: string | null;
   conversationId?: string | null;

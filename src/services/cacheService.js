@@ -4,6 +4,9 @@ const logger = require('./logger');
 let redis = null;
 
 const getRedis = () => {
+  // Replace only a fully closed client, allowing recovery after an outage
+  // without spawning connections on every transient error event.
+  if (redis?.status === 'end') redis = null;
   if (!redis) {
     try {
       // Railway provides REDIS_URL; use it if available
@@ -25,13 +28,13 @@ const getRedis = () => {
         maxRetriesPerRequest: 3,
         // TLS yalnızca rediss:// için; düz redis://'e TLS dayatmak bağlantıyı askıda bırakır.
         ...(process.env.REDIS_URL && process.env.REDIS_URL.startsWith('rediss://')
-          ? { tls: { rejectUnauthorized: false } }
+          ? { tls: { rejectUnauthorized: true, ...(process.env.REDIS_CA_CERT ? { ca: process.env.REDIS_CA_CERT } : {}) } }
           : {}),
       });
 
       redis.on('error', (err) => {
         logger.warn('Redis connection error, caching disabled', { error: err.message });
-        redis = null;
+        // Keep this client: creating clients on every error leaks connections.
       });
     } catch (err) {
       logger.warn('Redis initialization failed', { error: err.message });
@@ -169,11 +172,34 @@ const quit = async () => {
 };
 
 const storeRefreshToken = async (tokenHash, userId, ttlSeconds = 604800) => {
-  await set(`rt:${tokenHash}`, { userId }, ttlSeconds);
+  const client = getRedis();
+  if (!client) throw new Error('Oturum deposuna ulaşılamıyor');
+  await client.set(`rt:${tokenHash}`, JSON.stringify({ userId }), 'EX', ttlSeconds);
 };
 
 const revokeRefreshToken = async (tokenHash) => {
-  await del(`rt:${tokenHash}`);
+  const client = getRedis();
+  if (!client) throw new Error('Oturum deposuna ulaşılamıyor');
+  await client.del(`rt:${tokenHash}`);
+};
+
+// GET + DEL must be one operation: concurrent requests may not reuse a token.
+const consumeRefreshToken = async (tokenHash) => {
+  const client = getRedis();
+  if (!client) throw new Error('Oturum deposuna ulaşılamıyor');
+  const value = await client.getdel(`rt:${tokenHash}`);
+  return value ? JSON.parse(value) : null;
+};
+
+const limitAuthIdentity = async (identity, action, limit = 5, seconds = 900) => {
+  const client = getRedis();
+  if (!client) throw new Error('Oturum deposuna ulaşılamıyor');
+  const key = `authlimit:${action}:${require('crypto').createHash('sha256').update(identity).digest('hex')}`;
+  const count = await client.eval(
+    "local n = redis.call('INCR', KEYS[1]); if n == 1 then redis.call('EXPIRE', KEYS[1], ARGV[1]) end; return n",
+    1, key, seconds
+  );
+  return Number(count) <= limit;
 };
 
 const isRefreshTokenStored = async (tokenHash) => {
@@ -185,5 +211,5 @@ module.exports = {
   get, set, del, delPattern,
   getVersion, invalidateNamespace, versionedKey,
   isRedisAvailable, ping, quit,
-  storeRefreshToken, revokeRefreshToken, isRefreshTokenStored,
+  storeRefreshToken, revokeRefreshToken, isRefreshTokenStored, consumeRefreshToken, limitAuthIdentity,
 };

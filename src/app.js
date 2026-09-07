@@ -12,7 +12,8 @@ const errorHandler = require('./middlewares/errorHandler');
 
 const app = express();
 
-app.set('trust proxy', 1);
+// Match the actual ingress topology; never trust arbitrary forwarded hops.
+app.set('trust proxy', process.env.TRUST_PROXY || 'loopback, linklocal, uniquelocal');
 
 const isProduction = process.env.NODE_ENV === 'production';
 
@@ -89,13 +90,13 @@ const corsOptions = {
     if (!isProduction && allowedOrigins.length === 0) {
       return callback(null, true);
     }
-    if (allowedOrigins.includes('*')) {
+    if (!isProduction && allowedOrigins.includes('*')) {
       return callback(null, true);
     }
     if (allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
-    return callback(new Error('CORS policy: origin not allowed'));
+    return callback(Object.assign(new Error('CORS policy: origin not allowed'), { statusCode: 403 }));
   },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
@@ -119,7 +120,7 @@ const userOrIpKey = (req, res) => {
   const authHeader = req.headers.authorization;
   if (authHeader && authHeader.startsWith('Bearer ')) {
     try {
-      const decoded = jwt.verify(authHeader.split(' ')[1], process.env.JWT_SECRET);
+      const decoded = jwt.verify(authHeader.split(' ')[1], process.env.JWT_SECRET, { algorithms: ['HS256'] });
       if (decoded && decoded.id) return `user:${decoded.id}`;
     } catch (_) {
       // süresi dolmuş / geçersiz token → IP'ye düş
@@ -135,7 +136,7 @@ const generalLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   keyGenerator: userOrIpKey,
-  skip: isIyzicoServerHook,
+  skip: req => isIyzicoServerHook(req) || /^\/api\/(auth|cards|business-dashboard|admin|payments)(\/|$)/.test(req.originalUrl),
 });
 
 // Ödeme durumu poll (mobil) için cömert limit; iyzico hook'ları muaf.
@@ -194,6 +195,9 @@ if (process.env.NODE_ENV !== 'test') {
   app.use('/api/business-dashboard', businessDashboardLimiter);
   app.use('/api/admin', adminLimiter);
   app.use('/api/payments', paymentsLimiter);
+  app.use('/api/payments/iyzico', rateLimit({ windowMs: 60 * 1000, max: 300,
+    standardHeaders: true, legacyHeaders: false,
+    message: { message: 'Çok fazla ödeme bildirimi' } }));
 }
 
 // iyzico webhook imzası için HAM gövde gerekir -> global JSON parser'dan ÖNCE,

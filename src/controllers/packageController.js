@@ -200,21 +200,19 @@ exports.update = async (req, res, next) => {
 
     const { title, description, originalPrice, discountedPrice, quantity, remainingQuantity, pickupStart, pickupEnd, pickupDate, imageUrl, isActive } = req.body;
 
-    // remainingQuantity validasyonu
-    if (remainingQuantity !== undefined && quantity !== undefined) {
-      if (remainingQuantity > quantity) {
-        return res.status(400).json({ message: 'Kalan miktar toplam miktardan fazla olamaz' });
+    await sequelize.transaction(async (transaction) => {
+      await pkg.reload({ transaction, lock: { level: transaction.LOCK.UPDATE, of: SurprisePackage } });
+      if (pkg.isSuspended && isActive === true && req.user.role !== 'admin') {
+        throw Object.assign(new Error('Paket yönetici tarafından askıya alınmış'), { statusCode: 403 });
       }
-    } else if (remainingQuantity !== undefined) {
-      if (remainingQuantity > pkg.quantity) {
-        return res.status(400).json({ message: 'Kalan miktar toplam miktardan fazla olamaz' });
+      if ((remainingQuantity ?? pkg.remainingQuantity) > (quantity ?? pkg.quantity)) {
+        throw Object.assign(new Error('Kalan miktar toplam miktardan fazla olamaz'), { statusCode: 400 });
       }
-    }
-
-    await pkg.update({
-      title, description, originalPrice, discountedPrice,
-      quantity, remainingQuantity, pickupStart, pickupEnd,
-      pickupDate, imageUrl, isActive,
+      if (Number(discountedPrice ?? pkg.discountedPrice) >= Number(originalPrice ?? pkg.originalPrice)) {
+        throw Object.assign(new Error('İndirimli fiyat orijinal fiyattan düşük olmalı'), { statusCode: 400 });
+      }
+      await pkg.update({ title, description, originalPrice, discountedPrice, quantity, remainingQuantity,
+        pickupStart, pickupEnd, pickupDate, imageUrl, isActive }, { transaction });
     });
 
     await cacheService.invalidateNamespace('packages:list');
@@ -242,19 +240,14 @@ exports.remove = async (req, res, next) => {
       return res.status(403).json({ message: 'Bu paketi silme yetkiniz yok' });
     }
 
-    // Aktif sipariş kontrolü
-    const activeOrders = await Order.count({
-      where: {
-        packageId: pkg.id,
-        status: { [Op.in]: ['pending', 'confirmed'] },
-      },
+    await sequelize.transaction(async (transaction) => {
+      await pkg.reload({ transaction, lock: { level: transaction.LOCK.UPDATE, of: SurprisePackage } });
+      const activeOrders = await Order.count({ where: { packageId: pkg.id,
+        [Op.or]: [{ status: { [Op.in]: ['awaiting_payment', 'pending', 'confirmed'] } },
+          { refundStatus: { [Op.in]: ['pending', 'processing', 'review'] } }] }, transaction });
+      if (activeOrders > 0) throw Object.assign(new Error('Bu paket için aktif sipariş veya iade var, silinemez'), { statusCode: 409 });
+      await pkg.destroy({ transaction });
     });
-
-    if (activeOrders > 0) {
-      return res.status(400).json({ message: 'Bu paket için aktif siparişler var, silinemez' });
-    }
-
-    await pkg.destroy();
 
     await cacheService.invalidateNamespace('packages:list');
 
