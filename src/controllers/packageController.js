@@ -2,6 +2,7 @@ const { SurprisePackage, Business, Category, Order, sequelize } = require('../mo
 const { Op } = require('sequelize');
 const { paginate, paginatedResponse, haversineSql } = require('../utils/helpers');
 const cacheService = require('../services/cacheService');
+const coalesce = require('../services/requestCoalescer');
 
 exports.getAll = async (req, res, next) => {
   try {
@@ -17,32 +18,39 @@ exports.getAll = async (req, res, next) => {
     const useGeoFilter =
       Number.isFinite(userLat) && Number.isFinite(userLng) && Number.isFinite(maxRadius) && maxRadius > 0;
 
-    // Koordinatlar ~1.1 km'lik ızgaraya (2 ondalık) yuvarlanır. 3 ondalık ~110 m
-    // demekti; yürüyen bir kullanıcı her 110 m'de yeni anahtar üretiyor, her giriş
-    // yaklaşık BİR kez okunup ölüyordu — cache'in maliyeti vardı, faydası yoktu.
-    // Yarıçap zaten km mertebesinde olduğu için 1.1 km'lik merkez kayması sonucu
-    // pratikte değiştirmez, buna karşılık anahtar sayısını ~100 kat düşürür.
+    // SQL filters and orders by the exact coordinate. Its cache key must use
+    // the same coordinate, otherwise nearby users can receive the wrong list.
     const cacheKeyParts = { city, district, categoryId, maxPrice, excludeExpired, page, limit };
     if (useGeoFilter) {
-      cacheKeyParts.lat = parseFloat(lat).toFixed(2);
-      cacheKeyParts.lng = parseFloat(lng).toFixed(2);
-      cacheKeyParts.radius = radius;
+      cacheKeyParts.lat = userLat;
+      cacheKeyParts.lng = userLng;
+      cacheKeyParts.radius = maxRadius;
     }
     // Sürümlü anahtar: geçersiz kılma tek INCR ile O(1) (bkz. cacheService).
     const cacheKey = await cacheService.versionedKey('packages:list', cacheKeyParts);
-    const cached = await cacheService.get(cacheKey);
+    const cached = req.campaign ? null : await cacheService.get(cacheKey);
     if (cached) {
       return res.json(cached);
     }
 
+    const responseData = await coalesce(req.campaign ? null : cacheKey, async () => {
     // Yalnızca onaylı + aktif işletmelerin paketleri herkese listelenir.
-    const businessWhere = { isActive: true, isApproved: true };
+    const businessWhere = { isActive: true, isApproved: true, isSuspended: false };
+    if (req.campaign?.businessIds.length) businessWhere.id = { [Op.in]: req.campaign.businessIds };
     if (city) businessWhere.city = city;
     if (district) businessWhere.district = district;
     if (categoryId) businessWhere.categoryId = categoryId;
 
-    const packageWhere = { isActive: true, remainingQuantity: { [Op.gt]: 0 } };
+    const packageWhere = { isActive: true, isSuspended: false, remainingQuantity: { [Op.gt]: 0 } };
     if (maxPrice) packageWhere.discountedPrice = { [Op.lte]: maxPrice };
+    if (req.campaign) {
+      packageWhere[Op.and] = [
+        sequelize.where(sequelize.literal('"SurprisePackage"."discountedPrice" * LEAST("SurprisePackage"."remainingQuantity", 100)'), { [Op.gte]: Number(req.campaign.minOrderAmount) }),
+        sequelize.literal(`(("SurprisePackage"."pickupDate"::date + "SurprisePackage"."pickupEnd"::time +
+          CASE WHEN "SurprisePackage"."pickupEnd"::time <= "SurprisePackage"."pickupStart"::time
+          THEN INTERVAL '1 day' ELSE INTERVAL '0 day' END) AT TIME ZONE 'Europe/Istanbul') > NOW()`),
+      ];
+    }
 
     if (excludeExpired !== 'false') {
       const today = new Date();
@@ -108,7 +116,9 @@ exports.getAll = async (req, res, next) => {
     const { count, rows: packages } = await SurprisePackage.findAndCountAll(queryOptions);
 
     const responseData = paginatedResponse(packages, count, page, limit);
-    await cacheService.set(cacheKey, responseData, 300);
+    if (!req.campaign) await cacheService.set(cacheKey, responseData, 300);
+    return responseData;
+    });
     res.json(responseData);
   } catch (error) {
     next(error);

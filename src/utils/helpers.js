@@ -2,7 +2,7 @@ const crypto = require('crypto');
 const { Op } = require('sequelize');
 const { Order } = require('../models');
 
-const generatePickupCode = async () => {
+const generatePickupCode = async (transaction) => {
   const maxAttempts = 10;
   let attempts = 0;
 
@@ -17,6 +17,9 @@ const generatePickupCode = async () => {
         pickupCode: code,
         status: { [Op.in]: ['awaiting_payment', 'pending', 'confirmed'] },
       },
+      // Reuse the reservation connection: waiting for another pool connection
+      // while holding stock/business locks can deadlock a full connection pool.
+      transaction,
     });
     if (!existingOrder) {
       return code;

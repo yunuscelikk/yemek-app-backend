@@ -17,6 +17,7 @@ const cancelOrder = async (id, { ip, allowPickedUp = false } = {}) => {
     const refundStatus = needsRefund && order.refundStatus === 'none'
       ? (order.paymentTransactionId && !order.fraudReview ? 'pending' : 'review') : order.refundStatus;
     await order.update({ status: 'cancelled', refundStatus,
+      couponReleased: order.couponReleased || oldStatus === 'awaiting_payment',
       ...(order.fraudReview ? { paymentError: 'fraud_review_cancelled' } : {}),
       ...(needsRefund && !order.refundRequestedAt ? { refundRequestedAt: new Date() } : {}) }, { transaction });
     if (['awaiting_payment', 'pending', 'confirmed'].includes(oldStatus)) {

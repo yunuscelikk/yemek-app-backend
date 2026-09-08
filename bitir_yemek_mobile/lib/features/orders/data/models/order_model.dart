@@ -80,11 +80,11 @@ class OrderModel extends Equatable {
       case 'pending':
         return 'Onay Bekliyor';
       case 'confirmed':
-        return 'Onaylandi';
+        return 'Onaylandı';
       case 'picked_up':
-        return 'Teslim Alindi';
+        return 'Teslim Alındı';
       case 'cancelled':
-        return 'Iptal Edildi';
+        return 'İptal Edildi';
       default:
         return status;
     }

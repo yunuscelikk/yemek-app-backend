@@ -14,6 +14,7 @@ const {
   haversineSql,
 } = require("../utils/helpers");
 const cacheService = require('../services/cacheService');
+const coalesce = require('../services/requestCoalescer');
 
 exports.getAll = async (req, res, next) => {
   try {
@@ -29,14 +30,12 @@ exports.getAll = async (req, res, next) => {
     const useGeoFilter =
       Number.isFinite(userLat) && Number.isFinite(userLng) && Number.isFinite(maxRadius) && maxRadius > 0;
 
-    // Cache anahtarı: geo sorgularında koordinat 2 haneye (~1.1 km) yuvarlanır ki
-    // her farklı ondalık ayrı anahtar olup Redis'i şişirmesin (paket listesiyle
-    // aynı desen — gerekçe için bkz. packageController.getAll).
+    // Keep the cache key consistent with the exact SQL distance filter.
     const keyParts = { city, district, categoryId, search, page, limit };
     if (useGeoFilter) {
-      keyParts.lat = userLat.toFixed(2);
-      keyParts.lng = userLng.toFixed(2);
-      keyParts.radius = radius;
+      keyParts.lat = userLat;
+      keyParts.lng = userLng;
+      keyParts.radius = maxRadius;
     }
     // Sürümlü anahtar: geçersiz kılma tek INCR ile O(1) (bkz. cacheService).
     const cacheKey = await cacheService.versionedKey('businesses:list', keyParts);
@@ -45,6 +44,7 @@ exports.getAll = async (req, res, next) => {
       return res.json(cached);
     }
 
+    const responseData = await coalesce(cacheKey, async () => {
     const where = { isActive: true, isApproved: true };
     if (city) where.city = city;
     if (district) where.district = district;
@@ -97,6 +97,8 @@ exports.getAll = async (req, res, next) => {
 
     const responseData = paginatedResponse(businesses, count, page, limit);
     await cacheService.set(cacheKey, responseData, 300);
+    return responseData;
+    });
     res.json(responseData);
   } catch (error) {
     next(error);

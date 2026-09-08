@@ -27,7 +27,12 @@ const authenticate = async (req, res, next) => {
     if (error.name === 'TokenExpiredError') {
       return res.status(401).json({ message: 'Token süresi dolmuş' });
     }
-    return res.status(401).json({ message: 'Geçersiz token' });
+    if (error.name === 'JsonWebTokenError' || error.name === 'NotBeforeError') {
+      return res.status(401).json({ message: 'Geçersiz token' });
+    }
+    // A database/network failure does not invalidate an otherwise valid session.
+    // Let the error handler return 5xx instead of making clients sign out.
+    return next(error);
   }
 };
 

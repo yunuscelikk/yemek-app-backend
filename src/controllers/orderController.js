@@ -1,3 +1,4 @@
+const couponService = require('../services/couponService');
 const { cancelOrder, cancellationMessage } = require('../services/orderCancellationService');
 const { Order, SurprisePackage, Business, Category, User, Notification, Coupon, sequelize } = require('../models');
 const { Op, UniqueConstraintError } = require('sequelize');
@@ -19,7 +20,7 @@ const releaseHoldCompensation = async (order, reason = 'checkout_init_failed') =
   const t = await sequelize.transaction();
   try {
     const [n] = await Order.update(
-      { status: 'cancelled', paymentStatus: 'failed', paymentError: reason },
+      { status: 'cancelled', couponReleased: true, paymentStatus: 'failed', paymentError: reason },
       { where: { id: order.id, status: 'awaiting_payment' }, transaction: t }
     );
     if (n === 1) {
@@ -82,55 +83,23 @@ exports.create = async (req, res, next) => {
       return res.status(400).json({ message: 'Bu paketin teslim alma süresi dolmuş' });
     }
 
-    let totalPrice = parseFloat(pkg.discountedPrice) * orderQuantity;
+    const totalPrice = couponService.cents(pkg.discountedPrice) * orderQuantity / 100;
     let finalPrice = totalPrice;
     let couponId = null;
     let discountAmount = 0;
 
-    // Kupon uygulama (mevcut mantık korunur)
     if (couponCode) {
-      const coupon = await Coupon.findOne({
-        where: {
-          code: couponCode.toUpperCase(),
-          isActive: true,
-          expiresAt: { [Op.gt]: new Date() },
-        },
-        transaction: t,
-        lock: true,
+      const quote = await couponService.reserve(couponCode, req.user.id, {
+        total: totalPrice, businessId: pkg.businessId, transaction: t,
       });
-
-      if (!coupon) {
-        await t.rollback();
-        return res.status(404).json({ message: 'Geçersiz kupon kodu' });
-      }
-
-      if (coupon.currentUsage >= coupon.maxUsage) {
-        await t.rollback();
-        return res.status(400).json({ message: 'Kupon kullanım limiti dolmuş' });
-      }
-
-      if (totalPrice < parseFloat(coupon.minOrderAmount)) {
-        await t.rollback();
-        return res.status(400).json({
-          message: `Bu kupon minimum ${coupon.minOrderAmount} TL siparişte geçerlidir`,
-        });
-      }
-
-      if (coupon.discountType === 'percentage') {
-        discountAmount = (totalPrice * parseFloat(coupon.discountValue)) / 100;
-      } else {
-        discountAmount = parseFloat(coupon.discountValue);
-      }
-
-      finalPrice = Math.max(0, totalPrice - discountAmount);
-      couponId = coupon.id;
-
-      await coupon.update(
-        { currentUsage: coupon.currentUsage + 1 },
-        { transaction: t }
-      );
+      finalPrice = quote.finalPrice;
+      discountAmount = quote.discountAmount;
+      couponId = quote.couponId;
     }
 
+    if (req.body.expectedFinalPrice != null && couponService.cents(req.body.expectedFinalPrice) !== couponService.cents(finalPrice)) {
+      throw couponService.problem('Paket fiyatı veya kupon koşulları değişti. Güncel tutarı kontrol edip tekrar deneyin.', 409);
+    }
     const isFree = finalPrice <= 0;
 
     // İşletme + kategori (basketItem.category1 için)
@@ -174,7 +143,7 @@ exports.create = async (req, res, next) => {
     let order;
     const maxCodeAttempts = 5;
     for (let codeAttempt = 0; codeAttempt < maxCodeAttempts; codeAttempt++) {
-      const pickupCode = await generatePickupCode();
+      const pickupCode = await generatePickupCode(t);
       try {
         order = await sequelize.transaction({ transaction: t }, async (savepoint) => Order.create({
           id: orderId,
@@ -182,6 +151,7 @@ exports.create = async (req, res, next) => {
           packageId,
           quantity: orderQuantity,
           totalPrice,
+          originalTotal: couponService.cents(pkg.originalPrice) * orderQuantity / 100,
           finalPrice,
           discountAmount,
           couponId,

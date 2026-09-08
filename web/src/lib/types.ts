@@ -237,6 +237,16 @@ export interface SettlementSummary {
 
 export type CouponType = "percentage" | "fixed";
 export interface Coupon {
+  title?: string | null;
+  firstOrderOnly: boolean;
+  perUserLimit: number | null;
+  maxDiscountAmount: number | null;
+  budgetLimit: number | null;
+  budgetUsed?: number;
+  completedOrders?: number;
+  isDiscoverable: boolean;
+  businessIds: string[];
+  merchantConsentConfirmed: boolean;
   id: string;
   code: string;
   discountType: CouponType;

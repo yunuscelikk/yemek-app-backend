@@ -64,7 +64,7 @@ class _OrdersPageState extends State<OrdersPage> {
                 AppSpacing.screenPadding,
                 0,
               ),
-              child: Text('Siparislerim', style: AppTypography.h2),
+              child: Text('Siparişlerim', style: AppTypography.h2),
             ),
             const SizedBox(height: AppSpacing.md),
 
@@ -204,7 +204,7 @@ class _OrdersPageState extends State<OrdersPage> {
           ),
           const SizedBox(width: AppSpacing.sm),
           _buildFilterChip(
-            label: 'Gecmis',
+            label: 'Geçmiş',
             icon: Icons.check_circle_outline,
             isSelected: currentFilter == OrderFilter.completed,
             onTap: () => context.read<OrdersBloc>().add(
@@ -213,7 +213,7 @@ class _OrdersPageState extends State<OrdersPage> {
           ),
           const SizedBox(width: AppSpacing.sm),
           _buildFilterChip(
-            label: 'Iptal Edilen',
+            label: 'İptal Edilen',
             icon: Icons.cancel_outlined,
             isSelected: currentFilter == OrderFilter.cancelled,
             onTap: () => context.read<OrdersBloc>().add(
@@ -231,39 +231,27 @@ class _OrdersPageState extends State<OrdersPage> {
     required bool isSelected,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.md,
-          vertical: AppSpacing.sm,
-        ),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary : AppColors.surface,
-          borderRadius: BorderRadius.circular(AppRadius.full),
-          border: Border.all(
-            color: isSelected ? AppColors.primary : AppColors.divider,
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              size: 16,
-              color: isSelected ? Colors.white : AppColors.textHint,
-            ),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: AppTypography.bodySmall.copyWith(
-                color: isSelected ? Colors.white : AppColors.textSecondary,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-              ),
-            ),
-          ],
-        ),
+    return ChoiceChip(
+      selected: isSelected,
+      onSelected: (_) => onTap(),
+      showCheckmark: false,
+      avatar: Icon(
+        icon,
+        size: 18,
+        color: isSelected ? AppColors.primaryInk : AppColors.textSecondary,
+      ),
+      label: Text(label),
+      labelStyle: AppTypography.bodyMedium.copyWith(
+        color: isSelected ? AppColors.primaryInk : AppColors.textSecondary,
+        fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+      ),
+      selectedColor: AppColors.primary.withValues(alpha: 0.10),
+      backgroundColor: AppColors.surface,
+      side: BorderSide(color: isSelected ? AppColors.sand : AppDepth.border),
+      shape: const StadiumBorder(),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.sm,
       ),
     );
   }

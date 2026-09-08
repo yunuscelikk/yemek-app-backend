@@ -1,6 +1,8 @@
+import '../../../coupons/presentation/rewards_summary.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../config/theme.dart';
+import '../../../../shared/widgets/app_surface.dart';
 import '../../../../shared/widgets/app_dialog.dart';
 import '../../../../shared/widgets/app_notice.dart';
 import '../../../auth/data/models/user_model.dart';
@@ -57,7 +59,7 @@ class ProfilePage extends StatelessWidget {
 
     final user = _getUserFromState(state);
     if (user == null) {
-      return _buildErrorState(context, 'Profil yuklenemedi');
+      return _buildErrorState(context, 'Profil yüklenemedi');
     }
 
     final isUpdating = state is ProfileUpdating;
@@ -81,11 +83,14 @@ class ProfilePage extends StatelessWidget {
                       ? null
                       : () => _showEditSheet(context, user),
                   icon: const Icon(Icons.edit_outlined, size: 18),
-                  label: const Text('Profili Duzenle'),
+                  label: const Text('Profili Düzenle'),
                 ),
               ),
             ),
 
+            const SizedBox(height: AppSpacing.lg),
+
+            const RewardsSummary(),
             const SizedBox(height: AppSpacing.lg),
 
             // Account section
@@ -95,7 +100,7 @@ class ProfilePage extends StatelessWidget {
               children: [
                 ProfileMenuItem(
                   icon: Icons.person_outline,
-                  title: 'Kisisel Bilgiler',
+                  title: 'Kişisel Bilgiler',
                   subtitle: user.name,
                   onTap: () => _showEditSheet(context, user),
                 ),
@@ -118,7 +123,7 @@ class ProfilePage extends StatelessWidget {
                 ProfileMenuItem(
                   icon: Icons.phone_outlined,
                   title: 'Telefon',
-                  subtitle: user.phone ?? 'Belirtilmemis',
+                  subtitle: user.phone ?? 'Belirtilmemiş',
                   onTap: () => _showEditSheet(context, user),
                 ),
               ],
@@ -142,14 +147,14 @@ class ProfilePage extends StatelessWidget {
                 ),
                 ProfileMenuItem(
                   icon: Icons.credit_card_outlined,
-                  title: 'Kayitli Kartlarim',
+                  title: 'Kayıtlı Kartlarım',
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute(builder: (_) => const SavedCardsPage()),
                   ),
                 ),
                 ProfileMenuItem(
                   icon: Icons.info_outline,
-                  title: 'Hakkinda',
+                  title: 'Hakkında',
                   onTap: () => _showAboutDialog(context),
                 ),
               ],
@@ -175,7 +180,7 @@ class ProfilePage extends StatelessWidget {
                   ),
                   icon: const Icon(Icons.logout),
                   label: const Text(
-                    'Cikis Yap',
+                    'Çıkış Yap',
                     style: TextStyle(fontWeight: FontWeight.w600),
                   ),
                 ),
@@ -188,7 +193,7 @@ class ProfilePage extends StatelessWidget {
             TextButton(
               onPressed: () => _showDeleteAccountDialog(context),
               child: Text(
-                'Hesabi Sil',
+                'Hesabı Sil',
                 style: AppTypography.bodySmall.copyWith(color: AppColors.error),
               ),
             ),
@@ -224,18 +229,7 @@ class ProfilePage extends StatelessWidget {
               ),
             ),
           ),
-          Container(
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(AppRadius.lg),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.shadow,
-                  blurRadius: 10,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
+          AppSurface(
             child: Column(
               children: [
                 for (int i = 0; i < children.length; i++) ...[
@@ -401,9 +395,7 @@ class ProfilePage extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppSpacing.lg),
-            _AboutCloseButton(
-              onTap: () => Navigator.of(dialogContext).pop(),
-            ),
+            _AboutCloseButton(onTap: () => Navigator.of(dialogContext).pop()),
           ],
         ),
       ),
@@ -417,7 +409,7 @@ class ProfilePage extends StatelessWidget {
       title: 'Cikis yap',
       message: 'Hesabinizdan cikis yapmak istediginize emin misiniz?',
       cancelLabel: 'Iptal',
-      confirmLabel: 'Cikis Yap',
+      confirmLabel: 'Çıkış Yap',
     ).then((confirmed) {
       if (confirmed && context.mounted) {
         context.read<ProfileBloc>().add(ProfileLogoutRequested());
@@ -433,7 +425,7 @@ class ProfilePage extends StatelessWidget {
       message:
           'Hesabinizi silmek istediginize emin misiniz? Bu islem geri alinamaz ve tum verileriniz kalici olarak silinecektir.',
       cancelLabel: 'Iptal',
-      confirmLabel: 'Hesabi Sil',
+      confirmLabel: 'Hesabı Sil',
     ).then((confirmed) {
       if (confirmed && context.mounted) {
         context.read<ProfileBloc>().add(DeleteAccountRequested());

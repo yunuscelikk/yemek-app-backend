@@ -1,5 +1,5 @@
 const { DataTypes } = require('sequelize');
-const bcrypt = require('bcryptjs');
+const passwordService = require('../services/passwordService');
 const sequelize = require('../config/database');
 
 const User = sequelize.define('User', {
@@ -81,19 +81,19 @@ const User = sequelize.define('User', {
   hooks: {
     beforeCreate: async (user) => {
       if (user.password) {
-        user.password = await bcrypt.hash(user.password, 10);
+        user.password = await passwordService.hash(user.password);
       }
     },
     beforeUpdate: async (user) => {
       if (user.changed('password') && user.password) {
-        user.password = await bcrypt.hash(user.password, 10);
+        user.password = await passwordService.hash(user.password);
       }
     },
   },
 });
 
 User.prototype.comparePassword = async function (candidatePassword) {
-  return this.password ? bcrypt.compare(candidatePassword, this.password) : false;
+  return this.password ? passwordService.compare(candidatePassword, this.password) : false;
 };
 
 User.prototype.toJSON = function () {

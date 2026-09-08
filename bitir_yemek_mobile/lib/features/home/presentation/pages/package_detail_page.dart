@@ -1,3 +1,6 @@
+import '../../../coupons/presentation/package_coupon_offer.dart';
+import '../../data/models/reservation_model.dart';
+import '../../../../core/utils/money_format.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
@@ -139,13 +142,8 @@ class _PackageDetailView extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.9),
             shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.shadow,
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
+            border: Border.all(color: AppDepth.border),
+            boxShadow: AppDepth.card,
           ),
           child: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
         ),
@@ -169,13 +167,8 @@ class _PackageDetailView extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.9),
                     shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.shadow,
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
+                    border: Border.all(color: AppDepth.border),
+                    boxShadow: AppDepth.card,
                   ),
                   child: Icon(
                     isFav ? Icons.favorite : Icons.favorite_border,
@@ -426,13 +419,8 @@ class _PackageDetailView extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.shadow,
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        border: Border.all(color: AppDepth.border),
+        boxShadow: AppDepth.card,
       ),
       child: Row(
         children: [
@@ -440,7 +428,7 @@ class _PackageDetailView extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                '₺${package.originalPrice.toStringAsFixed(0)}',
+                formatMoney(package.originalPrice),
                 style: AppTypography.bodyLarge.copyWith(
                   color: AppColors.textHint,
                   decoration: TextDecoration.lineThrough,
@@ -448,7 +436,7 @@ class _PackageDetailView extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                '₺${package.discountedPrice.toStringAsFixed(0)}',
+                formatMoney(package.discountedPrice),
                 style: AppTypography.h1.copyWith(
                   color: AppColors.primary,
                   fontSize: 28,
@@ -466,7 +454,7 @@ class _PackageDetailView extends StatelessWidget {
             child: Column(
               children: [
                 Text(
-                  '₺${savings.toStringAsFixed(0)}',
+                  formatMoney(savings),
                   style: AppTypography.h3.copyWith(color: AppColors.success),
                 ),
                 Text(
@@ -504,13 +492,8 @@ class _PackageDetailView extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.shadow,
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        border: Border.all(color: AppDepth.border),
+        boxShadow: AppDepth.card,
       ),
       child: Column(
         children: [
@@ -560,7 +543,10 @@ class _PackageDetailView extends StatelessWidget {
   }
 
   Widget _buildStockBar() {
-    final ratio = (package.remainingQuantity / package.quantity).clamp(0.0, 1.0);
+    final ratio = (package.remainingQuantity / package.quantity).clamp(
+      0.0,
+      1.0,
+    );
     final isLow = package.remainingQuantity <= 3;
 
     return Column(
@@ -636,64 +622,82 @@ class _PackageDetailView extends StatelessWidget {
           ),
         ],
       ),
-      child: SizedBox(
-        width: double.infinity,
-        height: 56,
-        child: ElevatedButton(
-          onPressed: isOutOfStock ? null : () => _showConfirmSheet(context),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primary,
-            foregroundColor: Colors.white,
-            disabledBackgroundColor: AppColors.divider,
-            disabledForegroundColor: AppColors.textHint,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppRadius.md),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (!isOutOfStock)
+            PackageCouponOffer(
+              package: package,
+              onSelected: (coupon, quantity) => _showConfirmSheet(
+                context,
+                coupon: coupon,
+                quantity: quantity,
+              ),
+            ),
+          SizedBox(
+            width: double.infinity,
+            height: 56,
+            child: ElevatedButton(
+              onPressed: isOutOfStock ? null : () => _showConfirmSheet(context),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                disabledBackgroundColor: AppColors.divider,
+                disabledForegroundColor: AppColors.textHint,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                ),
+              ),
+              // Fiyat butonda da yazıyor: sayfa kaydırılınca fiyat kartı ekrandan
+              // çıkıyor ve kullanıcı "ne kadara rezerve ediyorum?" sorusunu
+              // yukarı kaydırmadan cevaplayamıyordu.
+              child: isOutOfStock
+                  ? Text(
+                      'Tükendi',
+                      style: AppTypography.button.copyWith(
+                        fontSize: 18,
+                        color: AppColors.textHint,
+                      ),
+                    )
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Rezerve Et',
+                          style: AppTypography.button.copyWith(
+                            fontSize: 18,
+                            color: Colors.white,
+                          ),
+                        ),
+                        Container(
+                          width: 1,
+                          height: 18,
+                          margin: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.md,
+                          ),
+                          color: Colors.white.withValues(alpha: 0.4),
+                        ),
+                        Text(
+                          formatMoney(package.discountedPrice),
+                          style: AppTypography.button.copyWith(
+                            fontSize: 18,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
             ),
           ),
-          // Fiyat butonda da yazıyor: sayfa kaydırılınca fiyat kartı ekrandan
-          // çıkıyor ve kullanıcı "ne kadara rezerve ediyorum?" sorusunu
-          // yukarı kaydırmadan cevaplayamıyordu.
-          child: isOutOfStock
-              ? Text(
-                  'Tükendi',
-                  style: AppTypography.button.copyWith(
-                    fontSize: 18,
-                    color: AppColors.textHint,
-                  ),
-                )
-              : Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Rezerve Et',
-                      style: AppTypography.button.copyWith(
-                        fontSize: 18,
-                        color: Colors.white,
-                      ),
-                    ),
-                    Container(
-                      width: 1,
-                      height: 18,
-                      margin: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.md,
-                      ),
-                      color: Colors.white.withValues(alpha: 0.4),
-                    ),
-                    Text(
-                      '₺${package.discountedPrice.toStringAsFixed(0)}',
-                      style: AppTypography.button.copyWith(
-                        fontSize: 18,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
-                ),
-        ),
+        ],
       ),
     );
   }
 
-  void _showConfirmSheet(BuildContext context) {
+  void _showConfirmSheet(
+    BuildContext context, {
+    CouponModel? coupon,
+    int quantity = 1,
+  }) {
     final bloc = context.read<ReservationBloc>();
     showModalBottomSheet(
       context: context,
@@ -708,7 +712,11 @@ class _PackageDetailView extends StatelessWidget {
       ),
       builder: (_) => BlocProvider.value(
         value: bloc,
-        child: ReservationConfirmSheet(package: package),
+        child: ReservationConfirmSheet(
+          package: package,
+          initialCoupon: coupon,
+          initialQuantity: quantity,
+        ),
       ),
     );
   }

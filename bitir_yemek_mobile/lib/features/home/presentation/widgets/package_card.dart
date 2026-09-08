@@ -1,3 +1,4 @@
+import '../../../../core/utils/money_format.dart';
 import 'package:flutter/material.dart';
 import '../../../../config/theme.dart';
 import '../../../../core/utils/time_format.dart';
@@ -8,6 +9,7 @@ import '../../data/models/package_model.dart';
 class PackageCard extends StatelessWidget {
   final PackageModel package;
   final bool isHorizontal;
+  final String? campaignLabel;
   final bool isFavorite;
   final VoidCallback? onTap;
   final VoidCallback? onFavoriteTap;
@@ -16,6 +18,7 @@ class PackageCard extends StatelessWidget {
     super.key,
     required this.package,
     this.isHorizontal = false,
+    this.campaignLabel,
     this.isFavorite = false,
     this.onTap,
     this.onFavoriteTap,
@@ -35,13 +38,8 @@ class PackageCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.shadow,
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        border: Border.all(color: AppDepth.border),
+        boxShadow: AppDepth.card,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -110,7 +108,9 @@ class PackageCard extends StatelessWidget {
                 const SizedBox(height: AppSpacing.xs),
                 // Paket başlığı
                 Text(
-                  package.title,
+                  campaignLabel == null
+                      ? package.title
+                      : '$campaignLabel · ${package.title}',
                   style: AppTypography.bodyMedium.copyWith(
                     color: AppColors.textSecondary,
                   ),
@@ -265,7 +265,7 @@ class PackageCard extends StatelessWidget {
       children: [
         const Spacer(),
         Text(
-          '₺${package.originalPrice.toStringAsFixed(0)}',
+          formatMoney(package.originalPrice),
           style: AppTypography.bodyMedium.copyWith(
             color: AppColors.textHint,
             decoration: TextDecoration.lineThrough,
@@ -273,7 +273,7 @@ class PackageCard extends StatelessWidget {
         ),
         const SizedBox(width: AppSpacing.sm),
         Text(
-          '₺${package.discountedPrice.toStringAsFixed(0)}',
+          formatMoney(package.discountedPrice),
           style: AppTypography.bodyLarge.copyWith(
             color: AppColors.primary,
             fontWeight: FontWeight.bold,
@@ -332,13 +332,8 @@ class PackageCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.shadow,
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        border: Border.all(color: AppDepth.border),
+        boxShadow: AppDepth.card,
       ),
       child: Row(
         children: [
@@ -409,7 +404,9 @@ class PackageCard extends StatelessWidget {
                   ),
                   const SizedBox(height: AppSpacing.xs),
                   Text(
-                    package.title,
+                    campaignLabel == null
+                        ? package.title
+                        : '$campaignLabel · ${package.title}',
                     style: AppTypography.bodyMedium.copyWith(
                       color: AppColors.textSecondary,
                     ),
@@ -448,7 +445,7 @@ class PackageCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
-                        '₺${package.originalPrice.toStringAsFixed(0)}',
+                        formatMoney(package.originalPrice),
                         style: AppTypography.bodyMedium.copyWith(
                           color: AppColors.textHint,
                           decoration: TextDecoration.lineThrough,
@@ -456,7 +453,7 @@ class PackageCard extends StatelessWidget {
                       ),
                       const SizedBox(width: AppSpacing.sm),
                       Text(
-                        '₺${package.discountedPrice.toStringAsFixed(0)}',
+                        formatMoney(package.discountedPrice),
                         style: AppTypography.bodyLarge.copyWith(
                           color: AppColors.primary,
                           fontWeight: FontWeight.bold,

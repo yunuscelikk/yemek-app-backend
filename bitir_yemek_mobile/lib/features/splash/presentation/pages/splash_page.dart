@@ -17,9 +17,8 @@ import '../widgets/scene_palette.dart';
 /// Uygulamanın açılış ekranı: her başlatmada gösterilir.
 ///
 /// İki iş paralel yürür — sahne oynar, arkada oturum/konum kontrolü yapılır.
-/// Yönlendirme İKİSİ de bittiğinde gerçekleşir: kontrol erken biterse sahne
-/// kırpılmaz, sahne erken biterse kontrol beklenir. Böylece açılış ne yarım
-/// kalır ne de kullanıcıyı gereksiz bekletir.
+/// İlk tanıtımda sahnenin tamamı oynar. Dönen kullanıcıda hedef hazır olur
+/// olmaz aynı geçiş animasyonuyla uygulama açılır.
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
 
@@ -30,9 +29,11 @@ class SplashPage extends StatefulWidget {
 class _SplashPageState extends State<SplashPage> {
   /// Sahne animasyonunun bittiğini bildiren kapı.
   final Completer<void> _sceneDone = Completer<void>();
+  final Completer<void> _disposed = Completer<void>();
 
   /// Palet açılış anında bir kez seçilir; ekran ortasında renk değiştirmesin.
   late final ScenePalette _palette;
+  bool _playFullIntro = true;
 
   @override
   void initState() {
@@ -41,9 +42,16 @@ class _SplashPageState extends State<SplashPage> {
     unawaited(_bootstrap());
   }
 
+  @override
+  void dispose() {
+    _disposed.complete();
+    if (!_sceneDone.isCompleted) _sceneDone.complete();
+    super.dispose();
+  }
+
   Future<void> _bootstrap() async {
     final destination = await _resolveDestination();
-    await _sceneDone.future;
+    if (_playFullIntro) await _sceneDone.future;
     if (!mounted) return;
 
     Navigator.of(context).pushReplacement(_fadeRoute(destination));
@@ -60,16 +68,21 @@ class _SplashPageState extends State<SplashPage> {
 
       // Birbirinden bağımsız okumaları paralel yürüt — dönen kullanıcıda açılışı
       // hızlandırır (token, rol ve izin kontrolü ardışık beklemez).
-      final results = await Future.wait([
-        appTokenStorage.getAccessToken(),
-        appTokenStorage.getUserRole(),
-        locationService.hasPermission(),
-        appOnboardingStorage.hasSignedInBefore(),
-      ]);
+      final results = await Future.any([
+        Future.wait([
+          appTokenStorage.getAccessToken(),
+          appTokenStorage.getUserRole(),
+          appOnboardingStorage.hasSignedInBefore(),
+        ]),
+        // Dispose also cancels the timeout's timer if a platform read hangs.
+        _disposed.future.then((_) => <Object?>[null, null, false]),
+      ]).timeout(const Duration(seconds: 3));
+      if (!mounted) return const WelcomePage();
       final accessToken = results[0] as String?;
       final role = results[1] as String?;
-      final hasPermission = results[2] as bool;
-      final signedInBefore = results[3] as bool;
+      final signedInBefore = results[2] as bool;
+      _playFullIntro =
+          !signedInBefore && (accessToken == null || accessToken.isEmpty);
 
       // Oturum yok. Bu cihazda daha önce bir hesaba girilmişse tanıtımı
       // atlayıp doğrudan girişe götür — dönen kullanıcıyı üç tanıtım
@@ -80,12 +93,14 @@ class _SplashPageState extends State<SplashPage> {
 
       final isBusinessOwner = role == 'business_owner';
 
-      if (hasPermission) {
+      if (await locationService.hasPermission()) {
         if (isBusinessOwner) {
           return const BusinessOwnerScaffold();
         }
 
-        final position = await locationService.getCurrentPosition();
+        final position = await locationService.getCurrentPosition(
+          preferRecent: true,
+        );
         if (position != null) {
           return MainScaffold(
             latitude: position.latitude,
@@ -136,9 +151,7 @@ class _SplashPageState extends State<SplashPage> {
         statusBarIconBrightness: isLightOnDark
             ? Brightness.light
             : Brightness.dark,
-        statusBarBrightness: isLightOnDark
-            ? Brightness.dark
-            : Brightness.light,
+        statusBarBrightness: isLightOnDark ? Brightness.dark : Brightness.light,
       ),
       child: Scaffold(
         backgroundColor: _palette.skyBottom,

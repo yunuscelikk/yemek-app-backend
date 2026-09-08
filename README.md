@@ -192,6 +192,10 @@ docker compose exec app npm run db:migrate
 
 > Full schema & try-it-out available via Swagger at `/api-docs`.
 
+## Performance verification
+
+[Performance fixes and physical iPhone results — 8 September 2026](docs/performance-fixes-2026-09-08/REPORT.md) includes before/after API measurements, test results, device limits and reproduction instructions. [Campaign behavior and migration notes](CAMPAIGNS.md) describe the current coupon flows.
+
 ---
 
 <div align="center">

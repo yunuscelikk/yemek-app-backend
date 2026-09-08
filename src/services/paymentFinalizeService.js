@@ -23,7 +23,7 @@ const effectivePaymentStatus = (result) => {
 // Stok iade et + siparişi iptal et — yalnız hâlâ awaiting_payment ise (idempotent, yarış güvenli).
 const releaseStockGuarded = async (order, reason, t) => {
   const [n] = await Order.update(
-    { status: 'cancelled', paymentStatus: 'failed', paymentError: String(reason || '').slice(0, 500) },
+    { status: 'cancelled', couponReleased: true, paymentStatus: 'failed', paymentError: String(reason || '').slice(0, 500) },
     { where: { id: order.id, status: 'awaiting_payment' }, transaction: t }
   );
   if (n === 1) {

@@ -51,7 +51,7 @@ const packageUpdateSchema = z.object({
   description: z.string().optional(),
   originalPrice: z.number().min(0).optional(),
   discountedPrice: z.number().min(0).optional(),
-  quantity: z.number().int().min(1).optional(),
+  quantity: z.number().int().min(1).max(100).optional(),
   remainingQuantity: z.number().int().min(0).optional(),
   isActive: z.boolean().optional(),
   pickupStart: z.string().optional(),
@@ -129,8 +129,9 @@ const orderPaymentCardSchema = z.union([
 // Order
 const orderSchema = z.object({
   packageId: z.string().uuid("Geçerli bir paket ID girin"),
-  quantity: z.number().int().min(1).optional(),
-  couponCode: z.string().optional(),
+  quantity: z.number().int().min(1).max(100).optional(),
+  couponCode: z.string().trim().max(40).optional(),
+  expectedFinalPrice: z.number().finite().min(0).optional(),
   // Varsa native 3DS akışı; yoksa checkout form (eski app sürümleri) — geriye uyumlu.
   paymentCard: orderPaymentCardSchema.optional(),
 });

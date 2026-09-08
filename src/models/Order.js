@@ -2,6 +2,8 @@ const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
 const Order = sequelize.define('Order', {
+  originalTotal: { type: DataTypes.DECIMAL(10, 2), allowNull: true },
+  couponReleased: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
   id: {
     type: DataTypes.UUID,
     defaultValue: DataTypes.UUIDV4,
